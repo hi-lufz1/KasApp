@@ -94,12 +94,14 @@ fun LoginScreen(
                         )
                         .background(Color(0xFFFFF1D2))
                 ) {
+                    Spacer(modifier = Modifier.padding(72.dp))
                     Image(
                         painter = painterResource(id = R.drawable.logo),
                         contentDescription = "Logo KasApp",
                         modifier = Modifier
-                            .width(260.dp)
-                            .height(260.dp)
+                            .width(320.dp)
+                            .height(320.dp)
+                            .padding(start = 20.dp)
                     )
                 }
                 // 🔹 Card bawah (login)
