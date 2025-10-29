@@ -76,6 +76,11 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    implementation ("androidx.navigation:navigation-compose:2.8.0")
+    implementation("io.github.ehsannarmani:compose-charts-android:0.0.13")
+
+
+
     // Lifecycle + ViewModel Compose
     implementation("androidx.activity:activity-compose:1.9.2")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
@@ -87,4 +92,6 @@ dependencies {
     // ✅ Google Drive API (versi aman & kompatibel)
     implementation("com.google.api-client:google-api-client-android:1.34.0")
     implementation("com.google.apis:google-api-services-drive:v3-rev20230815-2.0.0")
+
+
 }

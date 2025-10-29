@@ -1,5 +1,6 @@
 package com.example.kasapp.ui.view
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,8 +28,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun LoginScreen(viewModel: LoginViewModel) {
+fun LoginScreen(
+    viewModel: LoginViewModel,
+    navController: androidx.navigation.NavController
+) {
     val context = LocalContext.current
     val activity = context as Activity
     val account by viewModel.account.collectAsState()
@@ -53,20 +58,33 @@ fun LoginScreen(viewModel: LoginViewModel) {
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        if (account == null) {
+    LaunchedEffect(account) {
+        account?.let {
+            navController.navigate(
+                "home/${it.displayName ?: "Pengguna"}/${it.email ?: "-"}"
+            ) {
+                popUpTo("login") { inclusive = true } // supaya tidak bisa kembali ke login
+            }
+        }
+    }
+
+    Scaffold {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+
             // 🔹 Bagian atas (krem dengan logo)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(),
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .fillMaxHeight(0.7f)
                         .clip(
                             RoundedCornerShape(
@@ -74,7 +92,8 @@ fun LoginScreen(viewModel: LoginViewModel) {
                                 bottomEnd = 40.dp
                             )
                         )
-                        .background(Color(0xFFFFF1D2))) {
+                        .background(Color(0xFFFFF1D2))
+                ) {
                     Image(
                         painter = painterResource(id = R.drawable.logo),
                         contentDescription = "Logo KasApp",
@@ -83,79 +102,57 @@ fun LoginScreen(viewModel: LoginViewModel) {
                             .height(260.dp)
                     )
                 }
-            // 🔹 Card bawah (login)
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.3f)
-                    .align(Alignment.BottomCenter)
-                    .padding(horizontal = 24.dp, vertical = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Selamat Datang Di KasApp!",
-                    fontSize = 16.sp,
-                    color = Color.Black,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                Button(
-                    onClick = {
-                        val signInIntent = googleSignInClient.signInIntent
-                        launcher.launch(signInIntent)
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(50),
+                // 🔹 Card bawah (login)
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(54.dp)
-                        .shadow(
-                            elevation = 8.dp,
-                            shape = RoundedCornerShape(50)
-                        )
+                        .fillMaxHeight(0.3f)
+                        .align(Alignment.BottomCenter)
+                        .padding(horizontal = 24.dp, vertical = 32.dp),
+                    verticalArrangement = Arrangement.spacedBy(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                    Text(
+                        text = "Selamat Datang Di KasApp!",
+                        fontSize = 16.sp,
+                        color = Color.Black,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    Button(
+                        onClick = {
+                            val signInIntent = googleSignInClient.signInIntent
+                            launcher.launch(signInIntent)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(50),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(54.dp)
+                            .shadow(
+                                elevation = 8.dp,
+                                shape = RoundedCornerShape(50)
+                            )
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_google),
-                            contentDescription = "Google Icon",
-                            modifier = Modifier.size(22.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "Login Dengan Google",
-                            color = Color.Black,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp
-                        )
-                    }
-                }
-            }
-            }
-        } else {
-            // 🔹 Setelah login berhasil
-            Column(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Selamat datang, ${account?.displayName ?: "Pengguna"}!")
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Email: ${account?.email ?: "-"}")
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        googleSignInClient.signOut().addOnCompleteListener {
-                            viewModel.logout()
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_google),
+                                contentDescription = "Google Icon",
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Login Dengan Google",
+                                color = Color.Black,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 16.sp
+                            )
                         }
                     }
-                ) {
-                    Text("Logout")
                 }
             }
         }
