@@ -1,4 +1,4 @@
-package com.example.kasapp.data.repository
+package com.example.kasapp.repository
 
 import com.example.kasapp.data.model.ChartData
 

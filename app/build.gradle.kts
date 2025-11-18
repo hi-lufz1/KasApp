@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -93,5 +94,11 @@ dependencies {
     implementation("com.google.api-client:google-api-client-android:1.34.0")
     implementation("com.google.apis:google-api-services-drive:v3-rev20230815-2.0.0")
 
+    // Room Database
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+
+    // Room Compiler pakai KSP
+    ksp("androidx.room:room-compiler:2.6.1")
 
 }

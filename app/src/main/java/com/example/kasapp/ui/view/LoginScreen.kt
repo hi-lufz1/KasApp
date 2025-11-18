@@ -21,8 +21,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.kasapp.R
 import com.example.kasapp.ui.viewmodel.LoginViewModel
+import com.example.kasapp.ui.viewmodel.ViewModelFactory
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -31,9 +34,10 @@ import com.google.android.gms.common.api.Scope
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel,
-    navController: androidx.navigation.NavController
+    navController: NavController
 ) {
+    val viewModel: LoginViewModel = viewModel(factory = ViewModelFactory.Factory)
+
     val context = LocalContext.current
     val activity = context as Activity
     val account by viewModel.account.collectAsState()

@@ -3,13 +3,13 @@ package com.example.kasapp.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kasapp.data.model.ChartData
-import com.example.kasapp.data.repository.ChartRepository
+import com.example.kasapp.repository.ChartRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class ChartViewModel(
-    private val repository: ChartRepository = ChartRepository()
+    private val repository: ChartRepository
 ) : ViewModel() {
 
     private val _chartData = MutableStateFlow<List<ChartData>>(emptyList())

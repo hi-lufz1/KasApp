@@ -15,17 +15,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kasapp.R
 import com.example.kasapp.ui.component.BottomBar
 import com.example.kasapp.ui.component.ChartSection
 import com.example.kasapp.ui.viewmodel.ChartViewModel
+import com.example.kasapp.ui.viewmodel.ViewModelFactory
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
     name: String?,
     email: String?,
-    viewModel: ChartViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    onNavigateToKelolaMenu: () -> Unit,
+    onNavigateToKasir: () -> Unit,
+    onNavigateToRiwayat: () -> Unit,
+    viewModel: ChartViewModel = viewModel(factory = ViewModelFactory.Factory)
 ) {
     var selectedTab by remember { mutableStateOf("Home") }
     val chartData by viewModel.chartData.collectAsState()
@@ -34,6 +39,15 @@ fun HomeScreen(
     Scaffold(bottomBar = {
         BottomBar(selectedTab = selectedTab) { tab ->
             selectedTab = tab
+            when (tab) {
+                "Riwayat" -> onNavigateToRiwayat()
+                "Home" -> { /* tetap di halaman ini */ }
+                "Backup" -> {
+                    // arahkan ke halaman backup kalau sudah punya
+                    // contoh:
+                    // onNavigateToBackup()
+                }
+            }
         }
     }
     )
@@ -50,12 +64,12 @@ fun HomeScreen(
             ) {
                 // 🔹 Header
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(id = R.drawable.user),
-                    contentDescription = null,
-                    tint = Color.Black,
-                    modifier = Modifier.size(48.dp)
-                )
+                    Icon(
+                        painter = painterResource(id = R.drawable.user),
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier.size(48.dp)
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
@@ -172,11 +186,23 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // 🔹 Menu List
-                MenuItem(title = "Kasir", icon = R.drawable.checkout)
+                MenuItem(
+                    title = "Kasir",
+                    icon = R.drawable.receipt,
+                    onClick = onNavigateToKasir
+                )
                 Spacer(modifier = Modifier.height(12.dp))
-                MenuItem(title = "Kelola Menu", icon = R.drawable.cutlery)
+                MenuItem(
+                    title = "Kelola Menu",
+                    icon = R.drawable.food,
+                    onClick = onNavigateToKelolaMenu
+                )
                 Spacer(modifier = Modifier.height(12.dp))
-                MenuItem(title = "Laporan Keuangan", icon = R.drawable.tnc)
+                MenuItem(
+                    title = "Laporan Keuangan",
+                    icon = R.drawable.result,
+                    onClick = {}
+                )
 
                 Spacer(modifier = Modifier.weight(1f))
             }
@@ -186,27 +212,27 @@ fun HomeScreen(
 }
 
 @Composable
-fun MenuItem(title: String, icon: Int) {
+fun MenuItem(title: String, icon: Int, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFF8F5F0))
-            .clickable { }
+            .background(Color(0xFFFFC107))
+            .clickable { onClick() }
             .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = title,
-            color = Color(0xFF5C4A1A),
+            color = Color.White,
             fontWeight = FontWeight.SemiBold,
             fontSize = 16.sp
         )
         Icon(
             painter = painterResource(id = icon),
             contentDescription = title,
-            tint = Color(0xFF5C4A1A),
+            tint = Color.White,
             modifier = Modifier.size(32.dp)
         )
     }
