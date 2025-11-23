@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -16,7 +17,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kasapp.data.model.ChartData
-
+import kotlin.math.floor
+import kotlin.math.log10
+import kotlin.math.pow
 
 @Composable
 fun ChartSection(
@@ -24,20 +27,37 @@ fun ChartSection(
     onPeriodChange: (String) -> Unit,
     dataList: List<ChartData>
 ) {
+
     val maxValue = dataList.maxOfOrNull { it.value } ?: 1.0
     val maxHeight = 200.dp
 
-    // 🔹 Tentukan kelipatan sumbu Y dinamis (6 level termasuk 0)
-    val roundedMax = ((maxValue / 1_000_000).toInt() + 1) * 1_000_000 // pembulatan agar rapi
-    val step = roundedMax / 5  // 5 interval = 6 titik
-    val yAxisValues = (5 downTo 0).map { i -> step * i.toDouble() }
+    // ---------- Sumbu Y Dinamis ----------
+    fun calculateNiceStep(max: Double): Double {
+        val raw = max / 5
+        val pow = 10.0.pow(floor(log10(raw)))
+        val normalized = raw / pow
 
+        val nice = when {
+            normalized < 2 -> 2
+            normalized < 5 -> 5
+            else -> 10
+        }
+        return nice * pow
+    }
 
+    val step = calculateNiceStep(maxValue)
+    val roundedMax = step * 5
+    val yAxisValues = (5 downTo 0).map { it * step }
+
+    // ---------- State Scroll ----------
+    val scrollState = rememberLazyListState()
+    val showScrollIndicator = dataList.size > 6
 
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        // 🔹 Tab (Hari, Bulan, Tahun)
+
+        // ---------- Tab Filter ----------
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -63,9 +83,10 @@ fun ChartSection(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 🔹 Sumbu Y + Chart Bar
+        // ---------- Chart + Sumbu Y ----------
         Row(modifier = Modifier.fillMaxWidth()) {
-            // Sumbu Y
+
+            // ---- Sumbu Y ----
             Column(
                 modifier = Modifier
                     .height(maxHeight)
@@ -81,37 +102,79 @@ fun ChartSection(
                 }
             }
 
-            // Chart
+            // ---- Chart Bar ----
             LazyRow(
+                state = scrollState,
                 modifier = Modifier
                     .height(maxHeight + 40.dp)
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.spacedBy(18.dp)
             ) {
                 items(dataList) { data ->
-                    val height = (data.value / maxValue) * maxHeight.value
+                    val normalizedHeight = (data.value / roundedMax) * maxHeight.value
+
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
                         Box(
                             modifier = Modifier
                                 .height(maxHeight)
-                                .width(24.dp)
+                                .width(if (dataList.size > 8) 32.dp else 40.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(Color.White)
                         ) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(height.dp)
+                                    .height(normalizedHeight.dp)
                                     .align(Alignment.BottomCenter)
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(Color(0xFFFFC107))
                             )
                         }
+
                         Spacer(modifier = Modifier.height(6.dp))
-                        Text(text = data.label, color = Color.Gray)
+
+                        Text(
+                            text = data.label,
+                            color = Color.Gray,
+                            fontSize = 12.sp
+                        )
                     }
                 }
             }
+        }
+
+        // ---------- Scroll Indicator ----------
+        if (showScrollIndicator) {
+
+            // ukuran indikator mengikuti posisi scroll
+            val maxScroll = scrollState.layoutInfo.totalItemsCount -
+                    scrollState.layoutInfo.visibleItemsInfo.size
+
+            val progress = if (maxScroll > 0)
+                scrollState.firstVisibleItemIndex.toFloat() / maxScroll
+            else 0f
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp)
+                    .height(5.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(Color(0xFFE0E0E0))
+            ) {
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(progress)
+                        .height(5.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(Color(0xFFFFC107))
+                )
+            }
+        }
+        else {
+            Spacer(Modifier.padding(top = 11.dp))
         }
     }
 }

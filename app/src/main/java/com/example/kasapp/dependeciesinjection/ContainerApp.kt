@@ -33,7 +33,9 @@ class ContainerApp(private val context: Context) : InterfaceContainerApp {
     }
 
     override val chartRepository: ChartRepository by lazy {
-        ChartRepository()
+        ChartRepository(
+            KasAppDatabase.getDatabase(context).transaksiDao()
+        )
     }
 
     override val backupRepository: BackupRepository by lazy {

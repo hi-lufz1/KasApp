@@ -1,27 +1,101 @@
 package com.example.kasapp.repository
 
+import android.util.Log
+import com.example.kasapp.data.dao.TransaksiDao
 import com.example.kasapp.data.model.ChartData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+
+class ChartRepository(
+    private val dao: TransaksiDao
+) {
+
+    // -------------------- HARIAN --------------------
+    fun getDailyData(): Flow<List<ChartData>> {
+        val cal = Calendar.getInstance()
+
+        val end = cal.timeInMillis
+
+        cal.add(Calendar.DAY_OF_YEAR, -6)
+        val start = cal.timeInMillis
+
+        val dayNames = listOf("Sen","Sel","Rab","Kam","Jum","Sab","Min")
+
+        return dao.getTransaksiByDateRange(start, end).map { transaksiList ->
+
+            Log.d("DEBUG", "Jumlah transaksi minggu ini: ${transaksiList.size}")
+            transaksiList.forEach {
+                Log.d("DEBUG", "Tgl: ${SimpleDateFormat("yyyy-MM-dd").format(it.tglTransaksi)}")
+            }
+            (0..6).map { i ->
+                val target = Calendar.getInstance()
+                target.timeInMillis = start
+                target.add(Calendar.DAY_OF_YEAR, i)
+
+                val targetStr = SimpleDateFormat("yyyyMMdd").format(target.time)
+
+                val total = transaksiList
+                    .filter {
+                        val tgl = SimpleDateFormat("yyyyMMdd").format(it.tglTransaksi)
+                        tgl == targetStr
+                    }
+                    .sumOf { it.jlhTransaksi }
+
+                ChartData(label = dayNames[i], value = total)
+            }
+        }
+    }
 
 
-class ChartRepository {
-    fun getDailyData(): List<ChartData> = listOf(
-        ChartData("Sen", 10000000.0),
-        ChartData("Sel", 9000000.0),
-        ChartData("Rab", 5000000.0),
-        ChartData("Kam", 3000000.0),
-        ChartData("Jum", 8000000.0),
-        ChartData("Sab", 2000000.0),
-        ChartData("Min", 4000000.0)
-    )
+    // -------------------- BULANAN --------------------
+    fun getMonthlyData(): Flow<List<ChartData>> {
+        val cal = Calendar.getInstance()
 
-    fun getMonthlyData(): List<ChartData> = listOf(
-        ChartData("Jan", 15000000.0),
-        ChartData("Feb", 18000000.0),
-        ChartData("Mar", 12000000.0)
-    )
+        // Awal tahun
+        cal.set(Calendar.DAY_OF_YEAR, 1)
+        val start = cal.timeInMillis
 
-    fun getYearlyData(): List<ChartData> = listOf(
-        ChartData("2023", 120000000.0),
-        ChartData("2024", 145000000.0)
-    )
+        // Akhir tahun
+        cal.add(Calendar.YEAR, 1)
+        cal.add(Calendar.DAY_OF_YEAR, -1)
+        val end = cal.timeInMillis
+
+        val monthLabels = listOf(
+            "Jan","Feb","Mar","Apr","Mei","Jun",
+            "Jul","Agu","Sep","Okt","Nov","Des"
+        )
+
+        return dao.getTransaksiByDateRange(start, end).map { transaksiList ->
+            monthLabels.mapIndexed { index, bulan ->
+                val total = transaksiList
+                    .filter {
+                        val m = Calendar.getInstance()
+                        m.timeInMillis = it.tglTransaksi
+                        m.get(Calendar.MONTH) == index
+                    }
+                    .sumOf { it.jlhTransaksi }
+
+                ChartData(label = bulan, value = total)
+            }
+        }
+    }
+
+    // -------------------- TAHUNAN --------------------
+    fun getYearlyData(): Flow<List<ChartData>> {
+        return dao.getAllTransaksi().map { transaksiList ->
+            transaksiList
+                .groupBy {
+                    val cal = Calendar.getInstance()
+                    cal.timeInMillis = it.tglTransaksi
+                    cal.get(Calendar.YEAR).toString()
+                }
+                .map { (year, data) ->
+                    ChartData(label = year, value = data.sumOf { it.jlhTransaksi })
+                }
+                .sortedBy { it.label }
+        }
+    }
 }

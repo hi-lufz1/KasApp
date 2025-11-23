@@ -34,8 +34,13 @@ fun HomeScreen(
     viewModel: ChartViewModel = viewModel(factory = ViewModelFactory.Factory)
 ) {
     var selectedTab by remember { mutableStateOf("Home") }
-    val chartData by viewModel.chartData.collectAsState()
-    val selectedPeriod by viewModel.selectedPeriod.collectAsState()
+    val data by viewModel.chartData.collectAsState()
+    val period by viewModel.selectedPeriod.collectAsState()
+
+
+    LaunchedEffect(Unit) {
+        viewModel.loadChartData("Hari")
+    }
 
     Scaffold(bottomBar = {
         BottomBar(selectedTab = selectedTab) { tab ->
@@ -178,9 +183,9 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 ChartSection(
-                    selectedPeriod = selectedPeriod,
+                    selectedPeriod = period,
                     onPeriodChange = { viewModel.loadChartData(it) },
-                    dataList = chartData
+                    dataList = data
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))

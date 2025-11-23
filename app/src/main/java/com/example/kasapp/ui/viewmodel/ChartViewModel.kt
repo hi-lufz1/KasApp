@@ -18,18 +18,14 @@ class ChartViewModel(
     private val _selectedPeriod = MutableStateFlow("Hari")
     val selectedPeriod: StateFlow<String> = _selectedPeriod
 
-    init {
-        loadChartData("Hari")
-    }
-
     fun loadChartData(period: String) {
+        _selectedPeriod.value = period
+
         viewModelScope.launch {
-            _selectedPeriod.value = period
-            _chartData.value = when (period) {
-                "Hari" -> repository.getDailyData()
-                "Bulan" -> repository.getMonthlyData()
-                "Tahun" -> repository.getYearlyData()
-                else -> emptyList()
+            when (period) {
+                "Hari" -> repository.getDailyData().collect { _chartData.value = it }
+                "Bulan" -> repository.getMonthlyData().collect { _chartData.value = it }
+                "Tahun" -> repository.getYearlyData().collect { _chartData.value = it }
             }
         }
     }
