@@ -25,7 +25,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
                     val navController = rememberNavController()
-                    val loginViewModel: LoginViewModel = viewModel()
+                    val loginViewModel: LoginViewModel = viewModel(
+                        factory = com.example.kasapp.ui.viewmodel.ViewModelFactory.Factory
+                    )
                     PengelolaHalaman(
                         navController = navController,
                         loginViewModel = loginViewModel,

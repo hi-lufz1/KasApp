@@ -26,9 +26,11 @@ object ViewModelFactory {
         // LoginViewModel (butuh Application)
         initializer {
             LoginViewModel(
-                application = kasApp()
+                application = kasApp(),
+                backupRepository = kasApp().containerApp.backupRepository
             )
         }
+
 
         // Initializer untuk HomeMenuViewModel
         initializer {
@@ -66,6 +68,10 @@ object ViewModelFactory {
             RiwayatViewModel(
                 kasApp().containerApp.repositoryTransaksi
             )
+        }
+
+        initializer {
+            BackupViewModel(this.kasApp())
         }
     }
 }

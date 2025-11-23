@@ -1,6 +1,7 @@
 package com.example.kasapp.data.db
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -40,6 +41,15 @@ abstract class KasAppDatabase : RoomDatabase() {
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { Instance = it }
+            }
+        }
+
+        fun forceReopen(context: Context) {
+            synchronized(this) {
+                Instance?.close()
+                Instance = null
+                Log.d("RestoreDebug", "DATABASE INSTANCE DI-RESET")
+                getDatabase(context)
             }
         }
     }

@@ -21,22 +21,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.kasapp.R
 import com.example.kasapp.ui.viewmodel.LoginViewModel
 import com.example.kasapp.ui.viewmodel.ViewModelFactory
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.kasapp.MainActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
+import com.google.api.services.drive.DriveScopes
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LoginScreen(
     navController: NavController
 ) {
-    val viewModel: LoginViewModel = viewModel(factory = ViewModelFactory.Factory)
+    val viewModel: LoginViewModel = viewModel(
+        factory = ViewModelFactory.Factory
+    )
 
     val context = LocalContext.current
     val activity = context as Activity
@@ -45,7 +49,10 @@ fun LoginScreen(
     // 🔹 Konfigurasi Google Sign-In
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestEmail()
-        .requestScopes(Scope("https://www.googleapis.com/auth/drive.file"))
+        .requestScopes(
+            Scope(DriveScopes.DRIVE_FILE),
+            Scope(DriveScopes.DRIVE_APPDATA)
+        )
         .build()
 
     val googleSignInClient = GoogleSignIn.getClient(context, gso)
@@ -62,14 +69,56 @@ fun LoginScreen(
         }
     }
 
-    LaunchedEffect(account) {
-        account?.let {
-            navController.navigate(
-                "home/${it.displayName ?: "Pengguna"}/${it.email ?: "-"}"
-            ) {
-                popUpTo("login") { inclusive = true } // supaya tidak bisa kembali ke login
+    val drivePermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val acc = GoogleSignIn.getLastSignedInAccount(context)
+            if (acc != null) {
+                viewModel.autoRestore {
+                    navController.navigate("home/${acc.displayName}/${acc.email}") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                    viewModel.scheduleBackupIfAllowed(acc)
+                }
             }
         }
+    }
+
+
+    val driveScopes = arrayOf(
+        Scope(DriveScopes.DRIVE_FILE),
+        Scope(DriveScopes.DRIVE_APPDATA)
+    )
+
+    LaunchedEffect(account) {
+        val acc = account ?: return@LaunchedEffect
+
+        // 1️⃣ Jika izin Drive belum diberikan → tampilkan popup
+        if (!GoogleSignIn.hasPermissions(acc, *driveScopes)) {
+            val permissionIntent = GoogleSignIn.getClient(
+                context,
+                GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestEmail()
+                    .requestScopes(driveScopes[0], *driveScopes) // wajib semua scope
+                    .setAccountName(acc.email.toString())
+                    .build()
+            ).signInIntent
+
+            drivePermissionLauncher.launch(permissionIntent)
+            return@LaunchedEffect // ⛔ stop supaya tidak lanjut ke nav / Worker
+        }
+
+        viewModel.autoRestore {
+            (activity as MainActivity).recreate() // ⬅ paksa refresh DB + ViewModel
+
+            navController.navigate("home/${acc.displayName}/${acc.email}") {
+                popUpTo("login") { inclusive = true }
+            }
+
+            viewModel.scheduleBackupIfAllowed(acc)
+        }
+
     }
 
     Scaffold {
