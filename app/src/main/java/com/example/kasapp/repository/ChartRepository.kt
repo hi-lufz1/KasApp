@@ -22,7 +22,7 @@ class ChartRepository(
         cal.add(Calendar.DAY_OF_YEAR, -6)
         val start = cal.timeInMillis
 
-        val dayNames = listOf("Sen","Sel","Rab","Kam","Jum","Sab","Min")
+        val dayNames = listOf("Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min")
 
         return dao.getTransaksiByDateRange(start, end).map { transaksiList ->
 
@@ -64,8 +64,8 @@ class ChartRepository(
         val end = cal.timeInMillis
 
         val monthLabels = listOf(
-            "Jan","Feb","Mar","Apr","Mei","Jun",
-            "Jul","Agu","Sep","Okt","Nov","Des"
+            "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+            "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
         )
 
         return dao.getTransaksiByDateRange(start, end).map { transaksiList ->
@@ -98,4 +98,72 @@ class ChartRepository(
                 .sortedBy { it.label }
         }
     }
+
+    // ======================= TOTAL PENDAPATAN =========================
+
+    fun getTotalPendapatanHari(): Flow<Int> {
+        val cal = Calendar.getInstance()
+        val end = cal.timeInMillis
+
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        val start = cal.timeInMillis
+
+        return dao.getTotalPendapatanByDateRange(start, end)
+            .map { (it ?: 0.0).toInt() }
+    }
+
+    fun getTotalPendapatanMinggu(): Flow<Int> {
+        val cal = Calendar.getInstance()
+
+        val end = cal.timeInMillis
+
+        cal.add(Calendar.DAY_OF_YEAR, -6)
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        val start = cal.timeInMillis
+
+        return dao.getTotalPendapatanByDateRange(start, end)
+            .map { (it ?: 0.0).toInt() }
+    }
+
+    fun getTotalPendapatanBulan(): Flow<Int> {
+        val cal = Calendar.getInstance()
+
+        // Awal bulan
+        cal.set(Calendar.DAY_OF_MONTH, 1)
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        val start = cal.timeInMillis
+
+        // Akhir sekarang
+        val end = Calendar.getInstance().timeInMillis
+
+        return dao.getTotalPendapatanByDateRange(start, end)
+            .map { (it ?: 0.0).toInt() }
+    }
+
+    fun getTotalPendapatanTahun(): Flow<Int> {
+        val cal = Calendar.getInstance()
+
+        // Awal tahun
+        cal.set(Calendar.DAY_OF_YEAR, 1)
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        val start = cal.timeInMillis
+
+        val end = Calendar.getInstance().timeInMillis
+
+        return dao.getTotalPendapatanByDateRange(start, end)
+            .map { (it ?: 0.0).toInt() }
+    }
+
 }

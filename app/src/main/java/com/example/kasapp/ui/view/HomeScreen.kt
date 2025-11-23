@@ -36,10 +36,12 @@ fun HomeScreen(
     var selectedTab by remember { mutableStateOf("Home") }
     val data by viewModel.chartData.collectAsState()
     val period by viewModel.selectedPeriod.collectAsState()
+    val totalPendapatan by viewModel.totalPendapatan.collectAsState()
 
 
     LaunchedEffect(Unit) {
         viewModel.loadChartData("Hari")
+        viewModel.loadTotalPendapatan("Hari ini")
     }
 
     Scaffold(bottomBar = {
@@ -160,8 +162,7 @@ fun HomeScreen(
                                             onClick = {
                                                 selectedPeriodText = option
                                                 expanded = false
-                                                // 🔸 Kamu bisa trigger ViewModel untuk update data di sini
-                                                // viewModel.loadChartData(option)
+                                                viewModel.loadTotalPendapatan(option)
                                             }
                                         )
                                     }
@@ -171,7 +172,7 @@ fun HomeScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Rp 20.000.000,00",
+                            text = "Rp " + "%,d".format(totalPendapatan).replace(",", "."),
                             color = Color(0xFFFF6B00),
                             fontSize = 26.sp,
                             fontWeight = FontWeight.Bold
