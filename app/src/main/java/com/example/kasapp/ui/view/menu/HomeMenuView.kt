@@ -10,9 +10,11 @@ import com.example.kasapp.ui.viewmodel.ViewModelFactory
 import com.example.kasapp.ui.view.menu.components.FilterButton
 import com.example.kasapp.ui.view.menu.components.TopBarKelolaMenu
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -75,6 +77,7 @@ fun HomeMenuView(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {

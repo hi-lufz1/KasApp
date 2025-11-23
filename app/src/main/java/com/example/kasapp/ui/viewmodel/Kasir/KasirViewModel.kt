@@ -96,7 +96,6 @@ class KasirViewModel(
                 _uiState.value = state
             }
         }
-        loadAllMenu()
     }
 
     /**
@@ -198,8 +197,10 @@ class KasirViewModel(
             // 2. Buat List<DetailTransaksi> (Item)
             val detailItems = currentState.cart.map { cartItem ->
                 DetailTransaksi(
+                    idDetail = 0,
                     idTransaksi = 0,
                     idMenu = cartItem.menu.idMenu,
+                    namaMenuSaatTransaksi = cartItem.menu.namaMenu,
                     jumlah = cartItem.quantity,
                     hargaSaatTransaksi = cartItem.menu.hargaMenu
                 )
@@ -238,22 +239,21 @@ class KasirViewModel(
                 .first()
 
             // Konversi DetailTransaksi kembali ke CartItem
-            val cartItems = trxWithDetails.detailTransaksi.mapNotNull { detail ->
-                // Ambil data menu (nama, jenis) berdasarkan idMenu
-                val menu = repositoryMenuMakanan.getMenuById(detail.idMenu)
-                    .filterNotNull()
-                    .first() // Asumsi menu masih ada
+            val cartItems = trxWithDetails.detailTransaksi.map { detail ->
 
-                if (menu != null) {
-                    CartItem(
-                        // Buat ulang objek MenuMakanan, tapi GANTI harganya
-                        // dengan harga saat transaksi (history)
-                        menu = menu.copy(hargaMenu = detail.hargaSaatTransaksi),
-                        quantity = detail.jumlah
-                    )
-                } else {
-                    null // Jika menu sudah dihapus, abaikan
+                val menu = detail.idMenu?.let { id ->
+                    repositoryMenuMakanan.getMenuById(id).first()
                 }
+
+                CartItem(
+                    menu = MenuMakanan(
+                        idMenu = detail.idMenu ?: 0,
+                        namaMenu = detail.namaMenuSaatTransaksi, // pakai snapshot
+                        hargaMenu = detail.hargaSaatTransaksi,   // pakai snapshot
+                        jenisMenu = menu?.jenisMenu ?: "Tidak diketahui"
+                    ),
+                    quantity = detail.jumlah
+                )
             }
 
             _cart.value = cartItems // Muat keranjang lama
@@ -272,6 +272,8 @@ class KasirViewModel(
      * Ini membersihkan keranjang jika kita baru saja menyelesaikan transaksi.
      */
     fun onScreenResumed() {
+
+        loadAllMenu()
         // Jika lastTransactionTimestamp ada DAN keranjang tidak kosong,
         // berarti kita baru selesai transaksi (dari NotaPesananView)
         if (_uiState.value.lastTransactionTimestamp != null && _cart.value.isNotEmpty()) {
@@ -284,4 +286,5 @@ class KasirViewModel(
             _uiState.update { it.copy(isHistoryLoading = false) }
         }
     }
+
 }

@@ -18,7 +18,7 @@ import com.example.kasapp.data.entity.Transaksi // <-- IMPORT BARU
         Transaksi::class,     // <-- TAMBAHKAN ENTITY
         DetailTransaksi::class  // <-- TAMBAHKAN ENTITY
     ],
-    version = 2, // <-- NAIKKAN VERSI DATABASE KARENA ADA PERUBAHAN
+    version = 3, // <-- NAIKKAN VERSI DATABASE KARENA ADA PERUBAHAN
     exportSchema = false
 )
 abstract class KasAppDatabase : RoomDatabase() {
