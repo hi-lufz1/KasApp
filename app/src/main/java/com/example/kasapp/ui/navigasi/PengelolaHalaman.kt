@@ -9,6 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.kasapp.ui.view.BackupScreen
 import com.example.kasapp.ui.view.HomeScreen
 import com.example.kasapp.ui.view.LoginScreen
 import com.example.kasapp.ui.view.Riwayat.RiwayatView
@@ -73,6 +74,10 @@ fun PengelolaHalaman(
                 // Navigasi ke Kelola Menu
                 onNavigateToKelolaMenu = {
                     navController.navigate("home_menu")
+                },
+
+                onNavigateToBackup = {
+                    navController.navigate("backup")
                 }
             )
         }
@@ -112,19 +117,17 @@ fun PengelolaHalaman(
         composable(route = SuccessScreen.route) {
             val previousRoute = navController.previousBackStackEntry?.destination?.route
 
-            SuccessView (
+            SuccessView(
                 onNavigateBack = {
                     if (previousRoute == RincianPesanan.route) {
                         navController.navigate(NotaPesanan.route) {
                             popUpTo(Kasir.route) { inclusive = false }
                         }
-                    }
-                    else if (previousRoute == InsertMenu.route || previousRoute == UpdateMenu.route) {
+                    } else if (previousRoute == InsertMenu.route || previousRoute == UpdateMenu.route) {
                         navController.navigate(HomeMenu.route) {
                             popUpTo(HomeMenu.route) { inclusive = true }
                         }
-                    }
-                    else {
+                    } else {
                         navController.popBackStack()
                     }
                 }
@@ -150,7 +153,7 @@ fun PengelolaHalaman(
 
         // Rute: Rincian Pesanan
         composable(route = RincianPesanan.route) {
-            RincianPesananView (
+            RincianPesananView(
                 viewModel = kasirViewModel,
                 onBackClick = { navController.popBackStack() },
                 onSaveClick = {
@@ -207,6 +210,10 @@ fun PengelolaHalaman(
                     }
                 }
             )
+        }
+
+        composable(route = Backup.route) {
+            BackupScreen(onBackClick = { navController.popBackStack() })
         }
     }
 }

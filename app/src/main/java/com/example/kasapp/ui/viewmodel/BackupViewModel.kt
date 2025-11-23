@@ -6,14 +6,15 @@ import androidx.lifecycle.viewModelScope
 import com.example.kasapp.repository.BackupRepository
 import kotlinx.coroutines.launch
 
-class BackupViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository = BackupRepository(application)
+class BackupViewModel(
+    application: Application,
+    private val backupRepository: BackupRepository
+) : AndroidViewModel(application) {
 
     fun backupToDrive(onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
             try {
-                repository.backupDatabase()
+                backupRepository.backupDatabase()
                 onResult(true, null)
             } catch (e: Exception) {
                 onResult(false, e.message)
@@ -24,7 +25,7 @@ class BackupViewModel(application: Application) : AndroidViewModel(application) 
     fun restoreFromDrive(onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
             try {
-                repository.restoreDatabase()
+                backupRepository.restoreDatabase()
                 onResult(true, null)
             } catch (e: Exception) {
                 onResult(false, e.message)

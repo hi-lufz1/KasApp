@@ -30,6 +30,7 @@ fun HomeScreen(
     onNavigateToKelolaMenu: () -> Unit,
     onNavigateToKasir: () -> Unit,
     onNavigateToRiwayat: () -> Unit,
+    onNavigateToBackup: () -> Unit,
     viewModel: ChartViewModel = viewModel(factory = ViewModelFactory.Factory)
 ) {
     var selectedTab by remember { mutableStateOf("Home") }
@@ -41,12 +42,11 @@ fun HomeScreen(
             selectedTab = tab
             when (tab) {
                 "Riwayat" -> onNavigateToRiwayat()
-                "Home" -> { /* tetap di halaman ini */ }
-                "Backup" -> {
-                    // arahkan ke halaman backup kalau sudah punya
-                    // contoh:
-                    // onNavigateToBackup()
+                "Home" -> { /* tetap di halaman ini */
                 }
+
+                "Backup" ->
+                    onNavigateToBackup()
             }
         }
     }

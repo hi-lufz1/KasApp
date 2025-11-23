@@ -71,8 +71,12 @@ object ViewModelFactory {
         }
 
         initializer {
-            BackupViewModel(this.kasApp())
+            BackupViewModel(
+                application = kasApp(),
+                backupRepository = kasApp().containerApp.backupRepository
+            )
         }
+
     }
 }
 
