@@ -118,7 +118,8 @@ fun ChartSection(
                         Box(
                             modifier = Modifier
                                 .height(maxHeight)
-                                .width(if (dataList.size > 8) 32.dp else 40.dp)
+//                                .width(if (dataList.size > 8) 32.dp else 40.dp)
+                                .width(36.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(Color.White)
                         ) {

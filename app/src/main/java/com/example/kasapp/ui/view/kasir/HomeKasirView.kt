@@ -80,20 +80,20 @@ fun HomeKasirView(
 
 
             // Bottom Navigation Bar
-            bottomBar = {
-                BottomBar(selectedTab = selectedTab) { tab ->
-                    selectedTab = tab
-                    when (tab) {
-                        "Riwayat" -> onNavigateToRiwayat()
-                        "Home" -> { /* tetap di halaman ini */ }
-                        "Backup" -> {
-                            // arahkan ke halaman backup kalau sudah punya
-                            // contoh:
-                            // onNavigateToBackup()
-                        }
-                    }
-                }
-            },
+//            bottomBar = {
+//                BottomBar(selectedTab = selectedTab) { tab ->
+//                    selectedTab = tab
+//                    when (tab) {
+//                        "Riwayat" -> onNavigateToRiwayat()
+//                        "Home" -> { /* tetap di halaman ini */ }
+//                        "Backup" -> {
+//                            // arahkan ke halaman backup kalau sudah punya
+//                            // contoh:
+//                            // onNavigateToBackup()
+//                        }
+//                    }
+//                }
+//            },
 
             floatingActionButton = {
                 if (uiState.totalCartItems > 0) {

@@ -33,12 +33,12 @@ fun TopBarKelolaMenu(
         modifier = modifier
             .fillMaxWidth()
             .background(Color(0xFFFEBC2F)) // Warna kuning solid
-            .padding(bottom = 20.dp)
+            .padding(bottom = 20.dp, )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 20.dp,  vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Bagian atas (Back + Title)
@@ -46,7 +46,6 @@ fun TopBarKelolaMenu(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.back),
