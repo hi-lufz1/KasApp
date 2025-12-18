@@ -12,6 +12,7 @@ import com.example.kasapp.ui.viewmodel.Menu.HomeMenuViewModel
 import com.example.kasapp.ui.viewmodel.Menu.InsertMenuViewModel
 import com.example.kasapp.ui.viewmodel.Menu.UpdateMenuViewModel
 import com.example.kasapp.ui.viewmodel.Riwayat.RiwayatViewModel
+import com.example.kasapp.ui.viewmodel.laporan.LaporanViewModel
 
 object ViewModelFactory {
 
@@ -69,6 +70,14 @@ object ViewModelFactory {
                 kasApp().containerApp.repositoryTransaksi
             )
         }
+
+        // Initializer untuk LaporanViewModel
+        initializer {
+            LaporanViewModel(
+                kasApp().containerApp.repositoryTransaksi
+            )
+        }
+
 
         initializer {
             BackupViewModel(

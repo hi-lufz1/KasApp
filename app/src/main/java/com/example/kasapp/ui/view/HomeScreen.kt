@@ -32,6 +32,7 @@ fun HomeScreen(
     onNavigateToKelolaMenu: () -> Unit,
     onNavigateToKasir: () -> Unit,
     onNavigateToRiwayat: () -> Unit,
+    onNavigateToLaporan: () -> Unit,
     onNavigateToBackup: () -> Unit,
     viewModel: ChartViewModel = viewModel(factory = ViewModelFactory.Factory)
 ) {
@@ -211,7 +212,7 @@ fun HomeScreen(
                 MenuItem(
                     title = "Laporan Keuangan",
                     icon = R.drawable.result,
-                    onClick = {}
+                    onClick = onNavigateToLaporan
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))

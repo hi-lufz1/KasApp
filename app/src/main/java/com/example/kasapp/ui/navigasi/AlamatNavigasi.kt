@@ -77,3 +77,7 @@ object NotaPesanan : Destinasi {
 object Backup : Destinasi {
     override val route = "backup"
 }
+
+object Laporan : Destinasi {
+    override val route = "laporan"
+}

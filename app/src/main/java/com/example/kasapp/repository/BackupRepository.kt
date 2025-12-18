@@ -61,7 +61,7 @@ class BackupRepository(private val context: Context) {
             .build()
 
         val request = PeriodicWorkRequestBuilder<BackupWorker>(
-            15, TimeUnit.MINUTES // hanya untuk test (minimal 15m)
+            1, TimeUnit.DAYS // hanya untuk test (minimal 15m)
         )
             .setConstraints(constraints)
             .addTag("AutoBackup")

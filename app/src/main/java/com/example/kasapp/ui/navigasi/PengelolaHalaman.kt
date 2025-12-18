@@ -16,6 +16,7 @@ import com.example.kasapp.ui.view.Riwayat.RiwayatView
 import com.example.kasapp.ui.view.kasir.HomeKasirView
 import com.example.kasapp.ui.view.kasir.NotaPesananView
 import com.example.kasapp.ui.view.kasir.RincianPesananView
+import com.example.kasapp.ui.view.laporan.LaporanScreen
 import com.example.kasapp.ui.view.menu.HomeMenuView
 import com.example.kasapp.ui.view.menu.InsertMenuView
 import com.example.kasapp.ui.view.menu.SuccessView
@@ -74,6 +75,9 @@ fun PengelolaHalaman(
                 // Navigasi ke Kelola Menu
                 onNavigateToKelolaMenu = {
                     navController.navigate("home_menu")
+                },
+                onNavigateToLaporan = {
+                    navController.navigate("laporan")
                 },
 
                 onNavigateToBackup = {
@@ -150,6 +154,11 @@ fun PengelolaHalaman(
                 },
             )
         }
+
+        composable("laporan") {
+            LaporanScreen()
+        }
+
 
         // Rute: Rincian Pesanan
         composable(route = RincianPesanan.route) {
