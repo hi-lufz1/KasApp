@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import com.example.kasapp.R
 import kotlinx.coroutines.delay
 // --- TAMBAHAN IMPORT DISPATCHERS ---
@@ -41,7 +40,7 @@ fun SuccessView(
         contentAlignment = Alignment.Center
     ) {
         Image(
-            painter = painterResource(id = R.drawable.success), // Panggil gambar Anda
+            painter = painterResource(id = R.drawable.successs), // Panggil gambar Anda
             contentDescription = "Sukses",
             modifier = Modifier
                 .fillMaxWidth(0.5f) // Atur lebar gambar (misal 80% lebar layar)

@@ -28,7 +28,7 @@ import com.example.kasapp.ui.view.menu.UpdateMenuView
 import com.example.kasapp.ui.view.profile.TentangKamiView
 import com.example.kasapp.ui.viewmodel.Kasir.KasirViewModel
 import com.example.kasapp.ui.viewmodel.LoginViewModel
-import com.example.kasapp.ui.viewmodel.Riwayat.DetailRiwayatView
+import com.example.kasapp.ui.view.Riwayat.DetailRiwayatView
 import com.example.kasapp.ui.viewmodel.ViewModelFactory
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions

@@ -1,8 +1,7 @@
-package com.example.kasapp.ui.viewmodel.Riwayat
+package com.example.kasapp.ui.view.Riwayat
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,7 +13,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -283,7 +281,7 @@ fun DetailRiwayatView(
 
             // Tombol Bagikan (Fixed di bawah)
             Button(
-                onClick = { /* TODO: Implementasi Share */ },
+                onClick = { onBackClick() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -291,7 +289,7 @@ fun DetailRiwayatView(
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5C542))
             ) {
                 Text(
-                    text = "Bagikan",
+                    text = "Selesai",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White

@@ -139,7 +139,10 @@ fun HomeKasirView(
                                 .background(Color.White),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator()
+                            CircularProgressIndicator(
+                                color = Color(0xFFFF6B00), // ✅ WARNA LOADING
+                                strokeWidth = 4.dp        // (opsional) lebih tebal
+                            )
                         }
                     } else if (uiState.listMenu.isEmpty()) {
                         Box(

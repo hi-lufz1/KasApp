@@ -22,14 +22,26 @@ class BackupViewModel(
         }
     }
 
-    fun restoreFromDrive(onResult: (Boolean, String?) -> Unit) {
+    fun restoreFromDrive(
+        force: Boolean = false,
+        onResult: (Boolean, String?) -> Unit
+    ) {
         viewModelScope.launch {
             try {
+                if (!force) {
+                    val needRestore = backupRepository.shouldRestore()
+                    if (!needRestore) {
+                        onResult(false, "LOCAL_NEWER")
+                        return@launch
+                    }
+                }
                 backupRepository.restoreDatabase()
                 onResult(true, null)
+
             } catch (e: Exception) {
                 onResult(false, e.message)
             }
         }
     }
+
 }

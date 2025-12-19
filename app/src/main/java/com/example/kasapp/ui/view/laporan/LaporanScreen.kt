@@ -380,13 +380,18 @@ fun PreviewLaporanDialog(
         onDismissRequest = onDismiss,
         title = { Text("Preview Laporan") },
         confirmButton = {
-            Button(onClick = onGeneratePdf) {
+            Button(
+                onClick = onGeneratePdf,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFFC107)
+                )
+            ) {
                 Text("Generate PDF")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Batal")
+                Text("Batal",color = Color(0xFFFFC107))
             }
         },
         text = {

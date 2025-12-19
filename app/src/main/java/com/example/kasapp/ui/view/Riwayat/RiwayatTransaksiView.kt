@@ -105,7 +105,10 @@ fun RiwayatView(
             // --- Daftar Riwayat ---
             if (uiState.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        color = Color(0xFFFF6B00), // ✅ WARNA LOADING
+                        strokeWidth = 4.dp        // (opsional) lebih tebal
+                    )
                 }
             } else if (uiState.listTransaksi.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

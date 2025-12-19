@@ -1,7 +1,6 @@
 package com.example.kasapp.ui.view
 
 import android.annotation.SuppressLint
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,14 +13,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kasapp.R
+import com.example.kasapp.ui.component.KasAppSnackbar
 import com.example.kasapp.ui.viewmodel.BackupViewModel
 import com.example.kasapp.ui.viewmodel.ViewModelFactory
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -30,9 +31,19 @@ fun BackupScreen(
     onBackClick: () -> Unit,
     viewModel: BackupViewModel = viewModel(factory = ViewModelFactory.Factory)
 ) {
-    val context = LocalContext.current
+
+    var showForceRestoreDialog by remember { mutableStateOf(false) }
+    var pendingRestoreMessage by remember { mutableStateOf<String?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()   // ✅ PENTING
+    var isLoading by remember { mutableStateOf(false) }
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { snackbarData ->
+                KasAppSnackbar(snackbarData)
+            }
+        },
         topBar = {
             TopAppBar(
                 title = {
@@ -59,86 +70,181 @@ fun BackupScreen(
         }
     ) { paddingValues ->
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF7EEDB))
-                .padding(paddingValues),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
 
-
-            Card(
+            // ===================== MAIN CONTENT =====================
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(
-                    bottomEnd = 30.dp,
-                    bottomStart = 30.dp
-                ),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-//                elevation = CardDefaults.cardElevation(6.dp)
+                    .fillMaxSize()
+                    .background(Color(0xFFF7EEDB))
+                    .padding(paddingValues),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        text = "Backup database akan disimpan ke Google Drive akun yang Anda gunakan untuk login.",
-                        color = Color(0xFF5C4A27),
-                        style = MaterialTheme.typography.bodyMedium
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(
+                        bottomStart = 30.dp,
+                        bottomEnd = 30.dp
+                    ),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Text(
+                            text = "Backup database akan disimpan ke Google Drive akun yang Anda gunakan untuk login.",
+                            color = Color(0xFF5C4A27),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Spacer(Modifier.height(40.dp))
+
+                    // ================= BACKUP =================
+                    BackupMenuButton(
+                        iconRes = R.drawable.cloudupload,
+                        text = "Backup Data Baru"
+                    ) {
+                        isLoading = true
+                        viewModel.backupToDrive { success, msg ->
+                            isLoading = false
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = if (success)
+                                        "Backup berhasil"
+                                    else
+                                        "Backup gagal: $msg"
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(20.dp))
+
+                    // ================= RESTORE =================
+                    BackupMenuButton(
+                        iconRes = R.drawable.download,
+                        text = "Restore Dari Drive"
+                    ) {
+                        isLoading = true
+                        viewModel.restoreFromDrive { success, msg ->
+                            isLoading = false
+
+                            if (!success && msg == "LOCAL_NEWER") {
+                                // 🔥 DATA LOKAL LEBIH BARU → TAMPILKAN DIALOG
+                                pendingRestoreMessage = msg
+                                showForceRestoreDialog = true
+                            } else {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = if (success)
+                                            "Restore berhasil"
+                                        else
+                                            "Restore gagal: $msg"
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+
+                    Spacer(Modifier.height(80.dp))
+
+                    Icon(
+                        painter = painterResource(id = R.drawable.cloudupload),
+                        contentDescription = null,
+                        modifier = Modifier.size(180.dp),
+                        tint = Color(0xFF6B6B6B)
                     )
                 }
             }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),  // padding untuk bagian tombol
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                Spacer(Modifier.height(40.dp))
-
-                BackupMenuButton(
-                    iconRes = R.drawable.cloudupload,
-                    text = "Backup Data Baru",
-                    onClick = {
-                        viewModel.backupToDrive { success, msg ->
-                            Toast.makeText(
-                                context,
-                                if (success) "Backup berhasil" else "Backup gagal: $msg",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
+            // ===================== LOADING OVERLAY =====================
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White.copy(alpha = 0.85f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(
+                            color = Color(0xFFFF6B00),
+                            strokeWidth = 4.dp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Memproses data...",
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
                     }
-                )
-
-                Spacer(Modifier.height(20.dp))
-
-                BackupMenuButton(
-                    iconRes = R.drawable.download,
-                    text = "Restore Dari Drive",
-                    onClick = {
-                        viewModel.restoreFromDrive { success, msg ->
-                            Toast.makeText(
-                                context,
-                                if (success) "Restore berhasil" else "Restore gagal: $msg",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
-                )
-
-                Spacer(Modifier.height(80.dp))
-
-                Icon(
-                    painter = painterResource(id = R.drawable.cloudupload),
-                    contentDescription = null,
-                    modifier = Modifier.size(180.dp),
-                    tint = Color(0xFF6B6B6B)
-                )
+                }
             }
         }
+        if (showForceRestoreDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showForceRestoreDialog = false
+                },
+                title = {
+                    Text(
+                        text = "Konfirmasi Restore",
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Data lokal lebih baru dari backup di Drive.\n\n" +
+                                "Apakah Anda yakin ingin menimpa data lokal?"
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showForceRestoreDialog = false
+                            isLoading = true
+
+                            viewModel.restoreFromDrive(force = true) { success, msg ->
+                                isLoading = false
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = if (success)
+                                            "Restore berhasil"
+                                        else
+                                            "Restore gagal: $msg"
+                                    )
+                                }
+                            }
+                        }
+                    ) {
+                        Text(
+                            text = "Timpa",
+                            color = Color(0xFFD32F2F)
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showForceRestoreDialog = false
+                        }
+                    ) {
+                        Text("Batal")
+                    }
+                }
+            )
+        }
+
     }
 }
-
 
 @Composable
 private fun BackupMenuButton(
@@ -159,7 +265,7 @@ private fun BackupMenuButton(
             painter = painterResource(id = iconRes),
             contentDescription = null,
             tint = Color.Black,
-            modifier = Modifier.size(32.dp),
+            modifier = Modifier.size(32.dp)
         )
         Spacer(Modifier.width(15.dp))
         Text(

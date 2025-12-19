@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kasapp.R
 import com.example.kasapp.ui.viewmodel.Kasir.KasirViewModel
-import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -55,7 +54,7 @@ fun NotaPesananView(
             Spacer(modifier = Modifier.height(32.dp))
 
             Image(
-                painter = painterResource(id = R.drawable.success),
+                painter = painterResource(id = R.drawable.succes),
                 contentDescription = "Transaksi Berhasil !",
                 modifier = Modifier.size(80.dp)
             )
