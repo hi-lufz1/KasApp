@@ -54,4 +54,36 @@ class LaporanViewModel(
             }.collect()
         }
     }
+
+    fun loadAll() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+
+            try {
+                // Ambil semua transaksi
+                repositoryTransaksi.getAllTransaksi()
+                    .collect { transaksi ->
+                        // Hitung total pendapatan
+                        val total = transaksi.sumOf { it.jlhTransaksi }
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                transaksiList = transaksi,
+                                totalPendapatan = total,
+                                startTime = null,
+                                endTime = null
+                            )
+                        }
+                    }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message
+                    )
+                }
+            }
+        }
+    }
+
 }

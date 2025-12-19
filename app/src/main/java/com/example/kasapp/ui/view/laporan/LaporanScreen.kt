@@ -1,14 +1,24 @@
 package com.example.kasapp.ui.view.laporan
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.kasapp.R
 import com.example.kasapp.data.entity.Transaksi
 import com.example.kasapp.ui.util.PdfLaporanGenerator
 import com.example.kasapp.ui.viewmodel.ViewModelFactory
@@ -17,98 +27,157 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 enum class JenisLaporan {
-    HARIAN, BULANAN, PER_TRANSAKSI
+    HARIAN, BULANAN, SEMUA_TRANSAKSI
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun LaporanScreen() {
-
+fun LaporanScreen(
+    onBackClick: () -> Unit
+) {
     val viewModel: LaporanViewModel =
         viewModel(factory = ViewModelFactory.Factory)
 
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    var showJenisSheet by remember { mutableStateOf(false) }
+    var showJenis by remember { mutableStateOf<JenisLaporan?>(null) }
+    var infoTanggal by remember { mutableStateOf("") }
     var showHarianPicker by remember { mutableStateOf(false) }
     var showBulananPicker by remember { mutableStateOf(false) }
-
-    var selectedJenis by remember { mutableStateOf<JenisLaporan?>(null) }
-    var infoTanggal by remember { mutableStateOf("") }
-
     var showPreview by remember { mutableStateOf(false) }
 
-
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Laporan") }) }
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Laporan",
+                        fontSize = 22.sp,
+                        color = Color.Black
+                    )
+                },
+                navigationIcon = {
+                    Image(
+                        painter = painterResource(id = R.drawable.back),
+                        contentDescription = "Back",
+                        modifier = Modifier
+                            .size(45.dp)
+                            .padding(4.dp)
+                            .clickable { onBackClick() },
+                        contentScale = ContentScale.Fit
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                ),
+                windowInsets = WindowInsets(0.dp)
+            )
+        }
     ) { padding ->
 
         Column(
             modifier = Modifier
-                .padding(padding)
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center
+                .background(Color(0xFFF7EEDB))
+                .padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Button(
+            // ===== HEADER CARD =====
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { showJenisSheet = true }
+                shape = RoundedCornerShape(
+                    bottomStart = 30.dp,
+                    bottomEnd = 30.dp
+                ),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                Text("Cetak Laporan")
+                Column(Modifier.padding(20.dp)) {
+                    Text(
+                        text = "Cetak laporan transaksi kas berdasarkan periode yang Anda pilih.",
+                        color = Color(0xFF5C4A27),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    if (infoTanggal.isNotEmpty()) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = infoTanggal,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
             }
 
-            if (infoTanggal.isNotEmpty()) {
-                Spacer(Modifier.height(12.dp))
-                Text(infoTanggal)
-            }
+            // ===== MENU =====
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-            if (uiState.transaksiList.isNotEmpty() && selectedJenis != null) {
+                Spacer(Modifier.height(40.dp))
+
+                LaporanMenuButton(
+                    icon = R.drawable.calendar,
+                    text = "Laporan Harian"
+                ) {
+                    showJenis = JenisLaporan.HARIAN
+                    showHarianPicker = true
+                }
+
                 Spacer(Modifier.height(20.dp))
 
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { showPreview = true }
+                LaporanMenuButton(
+                    icon = R.drawable.cloudupload,
+                    text = "Laporan Bulanan"
                 ) {
-                    Text("Preview Laporan")
-                }
-            }
-        }
-    }
-
-    /* ================= PILIH JENIS ================= */
-    if (showJenisSheet) {
-        ModalBottomSheet(onDismissRequest = { showJenisSheet = false }) {
-            Column(Modifier.padding(16.dp)) {
-
-                Text("Pilih Jenis Laporan", style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(16.dp))
-
-                LaporanItem("📅 Harian") {
-                    selectedJenis = JenisLaporan.HARIAN
-                    showHarianPicker = true
-                    showJenisSheet = false
-                }
-
-                LaporanItem("🗓 Bulanan") {
-                    selectedJenis = JenisLaporan.BULANAN
+                    showJenis = JenisLaporan.BULANAN
                     showBulananPicker = true
-                    showJenisSheet = false
                 }
 
-                LaporanItem("🧾 Per Transaksi") {
-                    selectedJenis = JenisLaporan.PER_TRANSAKSI
+                Spacer(Modifier.height(20.dp))
+
+                LaporanMenuButton(
+                    icon = R.drawable.receipt,
+                    text = "Semua Transaksi"
+                ) {
+                    showJenis = JenisLaporan.SEMUA_TRANSAKSI
                     infoTanggal = "Semua transaksi"
-                    showJenisSheet = false
+                   viewModel.loadAll()
                 }
 
-                Spacer(Modifier.height(24.dp))
+                if (showJenis != null) {
+                    Spacer(Modifier.height(30.dp))
+
+                    if (uiState.transaksiList.isNotEmpty()) {
+                        Button(
+                            onClick = { showPreview = true },
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFFFC107)
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Preview Laporan", color = Color.Black)
+                        }
+
+                    } else {
+                        Text(
+                            text = "Tidak ada transaksi pada periode yang dipilih",
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
             }
         }
     }
 
-    /* ================= HARIAN ================= */
+    // ===== DATE PICKER =====
     if (showHarianPicker) {
         HarianDatePicker(
             onDismiss = { showHarianPicker = false },
@@ -123,7 +192,6 @@ fun LaporanScreen() {
         )
     }
 
-    /* ================= BULANAN ================= */
     if (showBulananPicker) {
         MonthYearPicker(
             onDismiss = { showBulananPicker = false },
@@ -136,9 +204,10 @@ fun LaporanScreen() {
         )
     }
 
+    // ===== PREVIEW =====
     if (showPreview) {
         PreviewLaporanDialog(
-            jenis = selectedJenis!!,
+            jenis = showJenis!!,
             infoTanggal = infoTanggal,
             data = uiState.transaksiList,
             totalPendapatan = uiState.totalPendapatan,
@@ -146,7 +215,7 @@ fun LaporanScreen() {
                 showPreview = false
                 PdfLaporanGenerator.generatePdfAndOpen(
                     context,
-                    selectedJenis!!,
+                    showJenis!!,
                     uiState.transaksiList,
                     uiState.totalPendapatan,
                     uiState.startTime,
@@ -155,27 +224,41 @@ fun LaporanScreen() {
             },
             onDismiss = { showPreview = false }
         )
-
     }
-
 }
 
-/* ================= KOMPONEN ================= */
+/* ================= MENU BUTTON ================= */
 
 @Composable
-fun LaporanItem(text: String, onClick: () -> Unit) {
-    Card(
+fun LaporanMenuButton(
+    icon: Int,
+    text: String,
+    onClick: () -> Unit
+) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp)
+            .clip(RoundedCornerShape(25.dp))
+            .background(Color.White)
+            .clickable { onClick() }
+            .padding(vertical = 15.dp, horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text, Modifier.padding(16.dp))
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = null,
+            tint = Color.Black,
+            modifier = Modifier.size(28.dp)
+        )
+        Spacer(Modifier.width(15.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge.copy(color = Color.Black)
+        )
     }
 }
 
-/* ================= HARIAN PICKER ================= */
+/* ================= DATE PICKER ================= */
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -187,28 +270,24 @@ fun HarianDatePicker(
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.padding(16.dp)) {
-
             Text("Pilih Tanggal", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(12.dp))
-
             DatePicker(state = state, showModeToggle = false)
-
             Spacer(Modifier.height(16.dp))
+
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 TextButton(onClick = onDismiss) { Text("Batal") }
                 Spacer(Modifier.width(8.dp))
                 Button(
                     enabled = state.selectedDateMillis != null,
-                    onClick = {
-                        state.selectedDateMillis?.let(onConfirm)
-                    }
-                ) { Text("OK") }
+                    onClick = { state.selectedDateMillis?.let(onConfirm) }
+                ) {
+                    Text("OK")
+                }
             }
         }
     }
 }
-
-/* ================= BULANAN PICKER ================= */
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -222,7 +301,6 @@ fun MonthYearPicker(
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.padding(16.dp)) {
-
             Text("Pilih Bulan & Tahun", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(16.dp))
 
@@ -270,9 +348,7 @@ fun DropdownSelector(
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor()
+            modifier = Modifier.fillMaxWidth().menuAnchor()
         )
 
         ExposedDropdownMenu(expanded, { expanded = false }) {
@@ -287,6 +363,50 @@ fun DropdownSelector(
             }
         }
     }
+}
+
+/* ================= PREVIEW ================= */
+
+@Composable
+fun PreviewLaporanDialog(
+    jenis: JenisLaporan,
+    infoTanggal: String,
+    data: List<Transaksi>,
+    totalPendapatan: Double,
+    onGeneratePdf: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Preview Laporan") },
+        confirmButton = {
+            Button(onClick = onGeneratePdf) {
+                Text("Generate PDF")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Batal")
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 420.dp)
+            ) {
+                Text("LAPORAN ${jenis.name}")
+                Text("KasApp")
+                Spacer(Modifier.height(8.dp))
+                Text(infoTanggal)
+                Spacer(Modifier.height(12.dp))
+                Divider()
+                Spacer(Modifier.height(8.dp))
+                Text("Jumlah Transaksi : ${data.size}")
+                Text("Total Pendapatan : Rp $totalPendapatan")
+            }
+        }
+    )
 }
 
 /* ================= UTIL ================= */
@@ -330,70 +450,3 @@ fun Long.atEndOfDay(): Long = Calendar.getInstance().apply {
     set(Calendar.SECOND, 59)
     set(Calendar.MILLISECOND, 999)
 }.timeInMillis
-
-@Composable
-fun PreviewLaporanDialog(
-    jenis: JenisLaporan,
-    infoTanggal: String,
-    data: List<Transaksi>,
-    totalPendapatan: Double,
-    onGeneratePdf: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Preview Laporan") },
-        confirmButton = {
-            Button(onClick = onGeneratePdf) {
-                Text("Generate PDF")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Batal")
-            }
-        },
-        text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 420.dp)
-            ) {
-
-                // ===== HEADER =====
-                Text(
-                    text = "LAPORAN ${jenis.name}",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text("KasApp", style = MaterialTheme.typography.labelMedium)
-
-                Spacer(Modifier.height(6.dp))
-                Text(infoTanggal)
-
-                Spacer(Modifier.height(12.dp))
-                Divider()
-                Spacer(Modifier.height(8.dp))
-
-                // ===== SUMMARY =====
-                Text("Jumlah Transaksi : ${data.size}")
-                Text("Total Pendapatan : Rp $totalPendapatan")
-
-                Spacer(Modifier.height(12.dp))
-                Divider()
-                Spacer(Modifier.height(8.dp))
-
-                // ===== LIST TRANSAKSI =====
-                data.forEachIndexed { index, trx ->
-                    Text(
-                        text = "${index + 1}. TRX-${trx.idTransaksi} | " +
-                                "${formatTanggal(trx.tglTransaksi)} | " +
-                                "Rp ${trx.jlhTransaksi}",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Spacer(Modifier.height(4.dp))
-                }
-            }
-        }
-    )
-}
-

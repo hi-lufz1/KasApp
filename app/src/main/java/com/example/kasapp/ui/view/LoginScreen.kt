@@ -45,6 +45,8 @@ fun LoginScreen(
     val context = LocalContext.current
     val activity = context as Activity
     val account by viewModel.account.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+
 
     // 🔹 Konfigurasi Google Sign-In
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -91,6 +93,10 @@ fun LoginScreen(
         Scope(DriveScopes.DRIVE_APPDATA)
     )
 
+    LaunchedEffect(Unit) {
+        viewModel.checkSignedIn()
+    }
+
     LaunchedEffect(account) {
         val acc = account ?: return@LaunchedEffect
 
@@ -105,6 +111,7 @@ fun LoginScreen(
                     .build()
             ).signInIntent
 
+            viewModel.setLoading(false)
             drivePermissionLauncher.launch(permissionIntent)
             return@LaunchedEffect // ⛔ stop supaya tidak lanjut ke nav / Worker
         }
@@ -208,6 +215,27 @@ fun LoginScreen(
                             )
                         }
                     }
+                }
+            }
+        }
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White.copy(alpha = 0.85f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator(
+                        color = Color(0xFFFF6B00), // ✅ WARNA LOADING
+                        strokeWidth = 4.dp        // (opsional) lebih tebal
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Menyiapkan akun...",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
                 }
             }
         }

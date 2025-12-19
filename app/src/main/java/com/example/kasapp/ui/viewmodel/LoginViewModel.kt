@@ -19,12 +19,18 @@ class LoginViewModel(
 
     private val _account = MutableStateFlow<GoogleSignInAccount?>(null)
     val account = _account.asStateFlow()
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading = _isLoading.asStateFlow()
+
 
 
     fun checkSignedIn() {
+        _isLoading.value = true
         val account = GoogleSignIn.getLastSignedInAccount(getApplication())
         _account.value = account
+        _isLoading.value = false
     }
+
 
     fun setAccount(account: GoogleSignInAccount?) {
         _account.value = account
@@ -49,6 +55,7 @@ class LoginViewModel(
     // 🔹 Auto restore setelah login
     fun autoRestore(onDone: (Boolean) -> Unit) {
         viewModelScope.launch {
+            _isLoading.value = true
             try {
                 val needRestore = backupRepository.shouldRestore()
                 if (needRestore) {
@@ -57,7 +64,12 @@ class LoginViewModel(
                 onDone(true)
             } catch (e: Exception) {
                 onDone(false)
+            } finally {
+                _isLoading.value = false
             }
         }
+    }
+    fun setLoading(value: Boolean) {
+        _isLoading.value = value
     }
 }

@@ -156,7 +156,7 @@ fun PengelolaHalaman(
         }
 
         composable("laporan") {
-            LaporanScreen()
+            LaporanScreen(   onBackClick = { navController.popBackStack() })
         }
 
 
