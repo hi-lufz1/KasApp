@@ -35,10 +35,9 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RiwayatView(
-    // Inject ViewModel
     viewModel: RiwayatViewModel = viewModel(factory = ViewModelFactory.Factory),
     onBackClick: () -> Unit,
-    onNotaClick: (Int) -> Unit // Aksi saat card diklik, kirim ID Transaksi
+    onNotaClick: (Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -47,13 +46,12 @@ fun RiwayatView(
 
     // State untuk DatePicker
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = uiState.tanggalDipilih
+        initialSelectedDateMillis = uiState.tanggalDipilih ?: System.currentTimeMillis()
     )
 
-    // (Warna sesuai gambar Riwayat Transaksi.png)
     val backgroundColor = Color(0xFFFFF9EF) // Cream
-    val filterBackgroundColor = Color(0xFFF0F0F0) // Abu-abu muda
-    val filterSelectedColor = Color(0xFFFEBC2F)   // Oranye
+    val filterBackgroundColor = Color(0xFFF0F0F0)
+    val filterSelectedColor = Color(0xFFFEBC2F)
     val filterSelectedTextColor = Color.White
     val filterUnselectedTextColor = Color.Gray
 
@@ -62,12 +60,12 @@ fun RiwayatView(
             RiwayatTopBar(
                 onBackClick = onBackClick,
                 onDateClick = {
-                    showDatePicker = true // Buka kalender
+                    showDatePicker = true
                 },
-                backgroundColor = backgroundColor // <-- Kirim warna cream ke TopBar
+                backgroundColor = backgroundColor
             )
         },
-        containerColor = backgroundColor // Background cream
+        containerColor = backgroundColor
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -79,15 +77,15 @@ fun RiwayatView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .height(40.dp), // Tinggi filter lebih kecil
-                shape = RoundedCornerShape(40.dp), // Border radius lebih kecil
+                    .height(40.dp),
+                shape = RoundedCornerShape(40.dp),
                 color = filterBackgroundColor,
                 tonalElevation = 1.dp
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(3.dp) // Padding lebih kecil
+                        .padding(3.dp)
                 ) {
                     val filterOptions = listOf("Semua", "QRIS", "Tunai")
                     filterOptions.forEach { option ->
@@ -121,7 +119,6 @@ fun RiwayatView(
                     items(uiState.listTransaksi, key = { it.idTransaksi }) { transaksi ->
                         RiwayatItemCard(
                             transaksi = transaksi,
-                            // Panggil aksi navigasi ke NotaPesananView
                             onClick = { onNotaClick(transaksi.idTransaksi) }
                         )
                     }
@@ -129,7 +126,7 @@ fun RiwayatView(
             }
         }
 
-        // --- Tampilkan Date Picker Dialog ---
+        // --- Tampilkan Date Picker Dialog dengan Tombol Reset ---
         if (showDatePicker) {
             DatePickerDialog(
                 onDismissRequest = { showDatePicker = false },
@@ -137,7 +134,6 @@ fun RiwayatView(
                     TextButton(
                         onClick = {
                             showDatePicker = false
-                            // Ambil tanggal yang dipilih (pastikan tidak null)
                             val selectedTimestamp = datePickerState.selectedDateMillis
                             if (selectedTimestamp != null) {
                                 viewModel.onTanggalDipilihChange(selectedTimestamp)
@@ -148,8 +144,22 @@ fun RiwayatView(
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDatePicker = false }) {
-                        Text("Batal")
+                    Row {
+                        // Tombol Reset/Semua Tanggal
+                        TextButton(
+                            onClick = {
+                                showDatePicker = false
+                                viewModel.resetFilterTanggal()
+                            }
+                        ) {
+                            Text("Semua Tanggal", color = Color(0xFFFF6B6B))
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text("Batal")
+                        }
                     }
                 }
             ) {
@@ -167,7 +177,7 @@ fun RiwayatView(
 private fun RiwayatTopBar(
     onBackClick: () -> Unit,
     onDateClick: () -> Unit,
-    backgroundColor: Color // <-- Terima parameter warna
+    backgroundColor: Color
 ) {
     TopAppBar(
         title = {
@@ -180,7 +190,7 @@ private fun RiwayatTopBar(
         },
         navigationIcon = {
             Image(
-                painter = painterResource(id = R.drawable.back), // Ikon back Anda
+                painter = painterResource(id = R.drawable.back),
                 contentDescription = "Back",
                 modifier = Modifier
                     .size(55.dp)
@@ -192,15 +202,14 @@ private fun RiwayatTopBar(
         actions = {
             IconButton(onClick = onDateClick) {
                 Icon(
-                    painter = painterResource(id = R.drawable.calendar), // Ikon kalender Anda
+                    painter = painterResource(id = R.drawable.calendar),
                     contentDescription = "Pilih Tanggal",
                     modifier = Modifier.size(24.dp)
                 )
             }
         },
-        // --- PERBAIKAN: Gunakan warna cream ---
         colors = TopAppBarDefaults.topAppBarColors(containerColor = backgroundColor),
-        windowInsets = WindowInsets(0.dp) // Hapus divider
+        windowInsets = WindowInsets(0.dp)
     )
 }
 
@@ -219,9 +228,9 @@ private fun RiwayatFilterChip(
 
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(40.dp), // Border radius lebih kecil
+        shape = RoundedCornerShape(40.dp),
         color = backgroundColor,
-        modifier = modifier.fillMaxHeight() // Ikuti tinggi parent
+        modifier = modifier.fillMaxHeight()
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -231,7 +240,7 @@ private fun RiwayatFilterChip(
                 text = text,
                 color = textColor,
                 fontWeight = FontWeight.Bold,
-                fontSize = 13.sp // Font lebih kecil
+                fontSize = 13.sp
             )
         }
     }
@@ -242,29 +251,28 @@ private fun RiwayatItemCard(
     transaksi: Transaksi,
     onClick: () -> Unit
 ) {
-    // Tentukan ikon dan warna berdasarkan jenis pembayaran
     val iconRes = if (transaksi.jenisPembayaran == "QRIS") R.drawable.qris else R.drawable.tunai
     val iconBgColor = if (transaksi.jenisPembayaran == "QRIS") Color(0xFFD6E3FF) else Color(0xFFD6FFD7)
+    val priceColor = if (transaksi.jenisPembayaran == "QRIS") Color(0xFF020202) else Color(0xFF000000)
 
     Card(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(70.dp), // Tinggi card lebih kecil
-        shape = RoundedCornerShape(40.dp), // Border radius lebih kecil
+            .height(70.dp),
+        shape = RoundedCornerShape(40.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 12.dp, vertical = 8.dp), // Padding lebih kecil
+                .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Ikon
             Box(
                 modifier = Modifier
-                    .size(50.dp) // Ikon lebih kecil
+                    .size(50.dp)
                     .clip(RoundedCornerShape(32.dp))
                     .background(iconBgColor),
                 contentAlignment = Alignment.Center
@@ -272,44 +280,42 @@ private fun RiwayatItemCard(
                 Image(
                     painter = painterResource(id = iconRes),
                     contentDescription = transaksi.jenisPembayaran,
-                    modifier = Modifier.size(30.dp) // Ukuran gambar ikon lebih kecil
+                    modifier = Modifier.size(30.dp)
                 )
             }
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Info (Jenis dan Tanggal)
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp) // Jarak antar teks
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
                     text = transaksi.jenisPembayaran,
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1C3F68) // Warna baru
+                    fontWeight = FontWeight.W600,
+                    color = Color(0xFF000000)
                 )
                 Text(
                     text = formatTanggalSingkat(transaksi.tglTransaksi),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.W600,
-                    color = Color(0xFF1C3F68) // Warna baru
+                    color = Color(0xFF343434)
                 )
             }
 
-            // Harga
             Text(
                 text = formatRupiah(transaksi.jlhTransaksi),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1C3F68)
+                color = priceColor
             )
         }
     }
 }
 
 
-// --- Helper Functions (Wajib ada) ---
+// --- Helper Functions ---
 
 private fun formatRupiah(amount: Double): String {
     val localeID = Locale("in", "ID")
@@ -318,7 +324,6 @@ private fun formatRupiah(amount: Double): String {
     return format.format(amount).replace("Rp", "Rp ")
 }
 
-// Format tanggal pendek (12-02-2025)
 private fun formatTanggalSingkat(timestamp: Long): String {
     return try {
         val sdf = SimpleDateFormat("dd-MM-yyyy", Locale("in", "ID"))

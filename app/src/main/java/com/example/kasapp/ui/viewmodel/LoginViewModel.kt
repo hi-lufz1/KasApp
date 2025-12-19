@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.kasapp.repository.BackupRepository
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
 import com.google.api.services.drive.DriveScopes
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,9 +37,11 @@ class LoginViewModel(
         _account.value = account
     }
 
-    fun logout() {
+    fun clearSession() {
         _account.value = null
     }
+
+
 
     // 🔹 Schedule backup jika user sudah punya izin Drive
     fun scheduleBackupIfAllowed(account: GoogleSignInAccount) {

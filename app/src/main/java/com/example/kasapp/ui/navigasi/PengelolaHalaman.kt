@@ -1,8 +1,11 @@
 package com.example.kasapp.ui.navigasi
 
+import android.app.Activity
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -10,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.kasapp.ui.view.BackupScreen
+import com.example.kasapp.ui.view.HomeProfileView
 import com.example.kasapp.ui.view.HomeScreen
 import com.example.kasapp.ui.view.LoginScreen
 import com.example.kasapp.ui.view.Riwayat.RiwayatView
@@ -21,9 +25,13 @@ import com.example.kasapp.ui.view.menu.HomeMenuView
 import com.example.kasapp.ui.view.menu.InsertMenuView
 import com.example.kasapp.ui.view.menu.SuccessView
 import com.example.kasapp.ui.view.menu.UpdateMenuView
+import com.example.kasapp.ui.view.profile.TentangKamiView
 import com.example.kasapp.ui.viewmodel.Kasir.KasirViewModel
 import com.example.kasapp.ui.viewmodel.LoginViewModel
+import com.example.kasapp.ui.viewmodel.Riwayat.DetailRiwayatView
 import com.example.kasapp.ui.viewmodel.ViewModelFactory
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -38,6 +46,15 @@ fun PengelolaHalaman(
 
     val kasirViewModel: KasirViewModel = viewModel(factory = ViewModelFactory.Factory)
     val scope = rememberCoroutineScope()
+
+    val context = LocalContext.current
+    val activity = context as Activity
+
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestEmail()
+        .build()
+
+    val googleSignInClient = GoogleSignIn.getClient(activity, gso)
 
     NavHost(
         navController = navController,
@@ -82,7 +99,13 @@ fun PengelolaHalaman(
 
                 onNavigateToBackup = {
                     navController.navigate("backup")
+                },
+                onNavigateToProfile = { name, email ->
+                    navController.navigate(
+                        "${Profile.route}/${Uri.encode(name)}/${Uri.encode(email)}"
+                    )
                 }
+
             )
         }
         // Rute: Kelola Menu (HomeMenu)
@@ -149,14 +172,14 @@ fun PengelolaHalaman(
                 onCheckoutClick = {
                     navController.navigate(RincianPesanan.route)
                 },
-                onNavigateToRiwayat = {
-                    navController.navigate("riwayat")
-                },
+//                onNavigateToRiwayat = {
+//                    navController.navigate("riwayat")
+//                },
             )
         }
 
         composable("laporan") {
-            LaporanScreen(   onBackClick = { navController.popBackStack() })
+            LaporanScreen(onBackClick = { navController.popBackStack() })
         }
 
 
@@ -214,15 +237,61 @@ fun PengelolaHalaman(
                     scope.launch {
                         kasirViewModel.loadCartFromHistory(idTransaksi)
                         withContext(Dispatchers.Main) {
-                            navController.navigate(NotaPesanan.route)
+                            navController.navigate(DetailRiwayat.route)
                         }
                     }
                 }
             )
         }
 
+        composable(route = DetailRiwayat.route) {
+            DetailRiwayatView(
+                viewModel = kasirViewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
         composable(route = Backup.route) {
             BackupScreen(onBackClick = { navController.popBackStack() })
+        }
+
+        // --- PROFILE ---
+        composable(
+            route = Profile.routeWithArgs,
+            arguments = listOf(
+                navArgument("name") { type = NavType.StringType },
+                navArgument("email") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+
+            val name = backStackEntry.arguments?.getString("name")
+            val email = backStackEntry.arguments?.getString("email")
+
+            HomeProfileView(
+                name = name,
+                email = email,
+                onBackClick = { navController.popBackStack() },
+                onTentangKamiClick = {
+                    navController.navigate(TentangKami.route)
+                },
+                onKeluarAkunClick = {
+                    googleSignInClient.signOut().addOnCompleteListener {
+                        loginViewModel.clearSession()
+
+                        navController.navigate("login") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                }
+            )
+        }
+
+
+        // --- HALAMAN TENTANG KAMI (BARU) ---
+        composable(route = TentangKami.route) {
+            TentangKamiView(
+                onBackClick = { navController.popBackStack() }
+            )
         }
     }
 }

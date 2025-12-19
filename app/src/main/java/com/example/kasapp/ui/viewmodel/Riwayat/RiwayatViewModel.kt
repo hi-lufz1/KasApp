@@ -20,9 +20,10 @@ import java.util.Calendar
 data class RiwayatUiState(
     val listTransaksi: List<Transaksi> = emptyList(),
     val filterJenis: String = "Semua", // "Semua", "QRIS", "Tunai"
-    val tanggalDipilih: Long = System.currentTimeMillis(), // Simpan 1 tanggal saja
+    val tanggalDipilih: Long? = null, // Null = tampilkan semua tanggal
     val totalPendapatan: Double = 0.0,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val isFilteringByDate: Boolean = false // Flag untuk tahu apakah sedang filter tanggal
 )
 
 /**
@@ -37,18 +38,29 @@ class RiwayatViewModel(
 
     // Flow internal untuk filter jenis pembayaran
     private val _filterJenis = MutableStateFlow("Semua")
-    // Flow internal untuk rentang tanggal (Mulai, Selesai)
-    private val _filterTanggal = MutableStateFlow(getRentangHariIni())
+    // Flow internal untuk rentang tanggal (Mulai, Selesai) - null untuk semua tanggal
+    private val _filterTanggal = MutableStateFlow<Pair<Long, Long>?>(null)
 
     init {
         viewModelScope.launch {
-            // 1. Dapatkan data transaksi terbaru berdasarkan TANGGAL
-            val transaksiByTanggalFlow = _filterTanggal.flatMapLatest { (mulai, selesai) ->
-                repository.getTransaksiByDateRange(mulai, selesai)
-                    .catch {
-                        _uiState.update { it.copy(isLoading = false) }
-                        emit(emptyList()) // Emit list kosong jika error
-                    }
+            // 1. Dapatkan data transaksi berdasarkan TANGGAL (atau semua jika null)
+            val transaksiByTanggalFlow = _filterTanggal.flatMapLatest { rentangTanggal ->
+                if (rentangTanggal == null) {
+                    // Tampilkan SEMUA transaksi (tanpa filter tanggal)
+                    repository.getAllTransaksi()
+                        .catch {
+                            _uiState.update { it.copy(isLoading = false) }
+                            emit(emptyList())
+                        }
+                } else {
+                    // Tampilkan transaksi berdasarkan rentang tanggal
+                    val (mulai, selesai) = rentangTanggal
+                    repository.getTransaksiByDateRange(mulai, selesai)
+                        .catch {
+                            _uiState.update { it.copy(isLoading = false) }
+                            emit(emptyList())
+                        }
+                }
             }
 
             // 2. Gabungkan (combine) data dari (1) dengan filter JENIS
@@ -70,13 +82,11 @@ class RiwayatViewModel(
                         listTransaksi = filteredList,
                         totalPendapatan = totalPendapatanFiltered,
                         isLoading = false,
-                        filterJenis = jenis // Update filter jenis di state
-                        // tanggalDipilih sudah diupdate oleh onTanggalDipilihChange
+                        filterJenis = jenis,
+                        isFilteringByDate = _filterTanggal.value != null
                     )
                 }
-                // --- PERBAIKAN: Tambahkan lambda {} kosong ke .collect ---
-            }.collect { } // Panggil collect (dengan lambda kosong) agar flow tetap berjalan
-            // ----------------------------------------------------
+            }.collect { }
         }
     }
 
@@ -111,26 +121,30 @@ class RiwayatViewModel(
         return Pair(mulai, selesai)
     }
 
-    // Helper untuk mengambil rentang hari ini
-    private fun getRentangHariIni(): Pair<Long, Long> {
-        return getRentang24Jam(System.currentTimeMillis())
-    }
-
     /**
      * Dipanggil saat filter jenis pembayaran (Semua, QRIS, Tunai) berubah.
      */
     fun onFilterJenisChange(filter: String) {
-        _uiState.update { it.copy(isLoading = true) } // Tampilkan loading
-        _filterJenis.value = filter // Update flow filter jenis
+        _filterJenis.value = filter
     }
 
     /**
      * Dipanggil saat tanggal dipilih dari kalender.
      */
     fun onTanggalDipilihChange(tanggal: Long) {
-        _uiState.update { it.copy(isLoading = true, tanggalDipilih = tanggal) } // Tampilkan loading
-        _filterTanggal.value = getRentang24Jam(tanggal) // Update flow filter tanggal
+        _uiState.update { it.copy(tanggalDipilih = tanggal) }
+        _filterTanggal.value = getRentang24Jam(tanggal)
     }
+
+
+    /**
+     * Dipanggil saat user ingin melihat SEMUA transaksi (reset filter tanggal).
+     */
+    fun resetFilterTanggal() {
+        _uiState.update { it.copy(tanggalDipilih = null) }
+        _filterTanggal.value = null
+    }
+
 
     /**
      * Menghapus transaksi.
@@ -138,7 +152,6 @@ class RiwayatViewModel(
     fun deleteTransaksi(transaksi: Transaksi) {
         viewModelScope.launch {
             repository.deleteTransaksi(transaksi)
-            // Tidak perlu pemicu manual, flow akan otomatis update
         }
     }
 }

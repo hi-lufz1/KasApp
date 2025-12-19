@@ -34,6 +34,7 @@ fun HomeScreen(
     onNavigateToRiwayat: () -> Unit,
     onNavigateToLaporan: () -> Unit,
     onNavigateToBackup: () -> Unit,
+    onNavigateToProfile: (String?, String?) -> Unit,
     viewModel: ChartViewModel = viewModel(factory = ViewModelFactory.Factory)
 ) {
     var selectedTab by remember { mutableStateOf("Home") }
@@ -76,12 +77,18 @@ fun HomeScreen(
             ) {
                 // 🔹 Header
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.user),
-                        contentDescription = null,
-                        tint = Color.Black,
-                        modifier = Modifier.size(48.dp)
+                    IconButton(
+                        onClick = { onNavigateToProfile(name, email) }
                     )
+                    {
+                        Icon(
+                            painter = painterResource(id = R.drawable.user),
+                            contentDescription = "Profile",
+                            tint = Color.Black,
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
+
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(

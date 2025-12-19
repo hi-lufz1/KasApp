@@ -77,7 +77,21 @@ object NotaPesanan : Destinasi {
 object Backup : Destinasi {
     override val route = "backup"
 }
+object DetailRiwayat : Destinasi {
+    override val route = "detail_riwayat"
+}
+
 
 object Laporan : Destinasi {
     override val route = "laporan"
+}
+
+object Profile {
+    const val route = "profile"
+    const val routeWithArgs = "profile/{name}/{email}"
+}
+
+
+object TentangKami : Destinasi {
+    override val route = "tentang_kami"
 }
