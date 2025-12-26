@@ -99,7 +99,7 @@ fun LaporanScreen(
             ) {
                 Column(Modifier.padding(20.dp)) {
                     Text(
-                        text = "Cetak laporan transaksi kas berdasarkan periode yang Anda pilih.",
+                        text = "Ekspor laporan transaksi berdasarkan periode yang Anda pilih. Laporan akan disimpan di /Documents/Laporan/",
                         color = Color(0xFF5C4A27),
                         style = MaterialTheme.typography.bodyMedium
                     )

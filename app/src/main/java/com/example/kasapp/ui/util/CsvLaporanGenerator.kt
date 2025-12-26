@@ -28,7 +28,7 @@ object CsvLaporanGenerator {
             put(MediaStore.MediaColumns.MIME_TYPE, "text/csv")
             put(
                 MediaStore.MediaColumns.RELATIVE_PATH,
-                Environment.DIRECTORY_DOCUMENTS + "/laporan"
+                Environment.DIRECTORY_DOCUMENTS + "/Laporan"
             )
         }
 
