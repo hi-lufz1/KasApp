@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kasapp.R
 import com.example.kasapp.data.entity.Transaksi
+import com.example.kasapp.ui.util.ExcelLaporanGenerator
 import com.example.kasapp.ui.util.PdfLaporanGenerator
 import com.example.kasapp.ui.viewmodel.ViewModelFactory
 import com.example.kasapp.ui.viewmodel.laporan.LaporanViewModel
@@ -27,7 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 enum class JenisLaporan {
-    HARIAN, BULANAN, SEMUA_TRANSAKSI
+    HARIAN, BULANAN, TAHUNAN, SEMUA_TRANSAKSI
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +48,8 @@ fun LaporanScreen(
     var showHarianPicker by remember { mutableStateOf(false) }
     var showBulananPicker by remember { mutableStateOf(false) }
     var showPreview by remember { mutableStateOf(false) }
+    var showTahunanPicker by remember { mutableStateOf(false) }
+
 
     Scaffold(
         topBar = {
@@ -138,6 +141,16 @@ fun LaporanScreen(
                     showJenis = JenisLaporan.BULANAN
                     showBulananPicker = true
                 }
+                Spacer(Modifier.height(20.dp))
+
+                LaporanMenuButton(
+                    icon = R.drawable.calendar,
+                    text = "Laporan Tahunan"
+                ) {
+                    showJenis = JenisLaporan.TAHUNAN
+                    showTahunanPicker = true
+                }
+
 
                 Spacer(Modifier.height(20.dp))
 
@@ -204,6 +217,27 @@ fun LaporanScreen(
         )
     }
 
+    if (showTahunanPicker) {
+        YearPicker(
+            onDismiss = { showTahunanPicker = false },
+            onConfirm = { year ->
+                val cal = Calendar.getInstance()
+                cal.set(year, Calendar.JANUARY, 1, 0, 0, 0)
+                cal.set(Calendar.MILLISECOND, 0)
+                val start = cal.timeInMillis
+
+                cal.set(year, Calendar.DECEMBER, 31, 23, 59, 59)
+                cal.set(Calendar.MILLISECOND, 999)
+                val end = cal.timeInMillis
+
+                viewModel.loadLaporan(start, end)
+                infoTanggal = "Tahunan: $year"
+                showTahunanPicker = false
+            }
+        )
+    }
+
+
     // ===== PREVIEW =====
     if (showPreview) {
         PreviewLaporanDialog(
@@ -222,9 +256,21 @@ fun LaporanScreen(
                     uiState.endTime
                 )
             },
+            onGenerateExcel = {
+                showPreview = false
+                ExcelLaporanGenerator.generateExcelAndOpen(
+                    context,
+                    showJenis!!,
+                    uiState.transaksiList,
+                    uiState.totalPendapatan,
+                    uiState.startTime,
+                    uiState.endTime
+                )
+            },
             onDismiss = { showPreview = false }
         )
     }
+
 }
 
 /* ================= MENU BUTTON ================= */
@@ -366,6 +412,41 @@ fun DropdownSelector(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun YearPicker(
+    onDismiss: () -> Unit,
+    onConfirm: (Int) -> Unit
+) {
+    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+    var year by remember { mutableStateOf(currentYear) }
+
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Pilih Tahun", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.height(16.dp))
+
+            DropdownSelector(
+                label = "Tahun",
+                value = year.toString(),
+                items = (currentYear - 10..currentYear).map { it.toString() }
+            ) {
+                year = (currentYear - 10) + it
+            }
+
+            Spacer(Modifier.height(24.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onDismiss) { Text("Batal") }
+                Spacer(Modifier.width(8.dp))
+                Button(onClick = { onConfirm(year) }) {
+                    Text("OK")
+                }
+            }
+        }
+    }
+}
+
+
 /* ================= PREVIEW ================= */
 
 @Composable
@@ -375,32 +456,42 @@ fun PreviewLaporanDialog(
     data: List<Transaksi>,
     totalPendapatan: Double,
     onGeneratePdf: () -> Unit,
+    onGenerateExcel: () -> Unit,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Preview Laporan") },
         confirmButton = {
-            Button(
-                onClick = onGeneratePdf,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFFC107)
-                )
-            ) {
-                Text("Generate PDF")
+            Row {
+                Button(
+                    onClick = onGeneratePdf,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFFFC107)
+                    )
+                ) {
+                    Text("PDF")
+                }
+
+                Spacer(Modifier.width(8.dp))
+
+                Button(
+                    onClick = onGenerateExcel,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4CAF50)
+                    )
+                ) {
+                    Text("Excel")
+                }
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Batal",color = Color(0xFFFFC107))
+                Text("Batal", color = Color(0xFFFFC107))
             }
         },
         text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 420.dp)
-            ) {
+            Column {
                 Text("LAPORAN ${jenis.name}")
                 Text("KasApp")
                 Spacer(Modifier.height(8.dp))
@@ -414,6 +505,7 @@ fun PreviewLaporanDialog(
         }
     )
 }
+
 
 /* ================= UTIL ================= */
 
