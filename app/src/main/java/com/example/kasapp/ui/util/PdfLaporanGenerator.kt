@@ -118,7 +118,7 @@ object PdfLaporanGenerator {
 
             val totalPerJenis = transaksi
                 .groupBy { it.jenisPembayaran }
-                .mapValues { it.value.sumOf { t -> t.jlhTransaksi } }
+                .mapValues { it.value.sumOf { t -> t.jlhTransaksi.toDouble() } }
 
             canvas.drawText("Rincian Pembayaran:", margin, y, paint)
             y += 16
@@ -162,7 +162,7 @@ object PdfLaporanGenerator {
                     canvas.drawText("TRX-${trx.idTransaksi}", margin + 40, y, paint)
                     canvas.drawText(format(trx.tglTransaksi), margin + 120, y, paint)
                     canvas.drawText(trx.jenisPembayaran, margin + 260, y, paint)
-                    canvas.drawText("%,.0f".format(trx.jlhTransaksi), margin + 400, y, paint)
+                    canvas.drawText("%,.0f".format(trx.jlhTransaksi.toDouble()), margin + 400, y, paint)
 
                     y += 18
                 }
@@ -191,9 +191,9 @@ object PdfLaporanGenerator {
                             y,
                             paint
                         )
-                        canvas.drawText("%,.0f".format(it.jlhTransaksi), margin + 380, y, paint)
+                        canvas.drawText("%,.0f".format(it.jlhTransaksi.toDouble()), margin + 380, y, paint)
 
-                        totalHarian += it.jlhTransaksi
+                        totalHarian += it.jlhTransaksi.toDouble()
                         y += 14
                     }
 
@@ -242,9 +242,9 @@ object PdfLaporanGenerator {
                                 y,
                                 paint
                             )
-                            canvas.drawText("%,.0f".format(it.jlhTransaksi), margin + 380, y, paint)
+                            canvas.drawText("%,.0f".format(it.jlhTransaksi.toDouble()), margin + 380, y, paint)
 
-                            totalHarian += it.jlhTransaksi
+                            totalHarian += it.jlhTransaksi.toDouble()
                             y += 14
                         }
 

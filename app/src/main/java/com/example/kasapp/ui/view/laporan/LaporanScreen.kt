@@ -483,7 +483,7 @@ fun PreviewLaporanDialog(
                         containerColor = Color(0xFF4CAF50)
                     )
                 ) {
-                    Text("Excel")
+                    Text("CSV")
                 }
             }
         },
