@@ -154,14 +154,14 @@ fun LaporanScreen(
 
                 Spacer(Modifier.height(20.dp))
 
-                LaporanMenuButton(
-                    icon = R.drawable.all,
-                    text = "Semua Transaksi"
-                ) {
-                    showJenis = JenisLaporan.SEMUA_TRANSAKSI
-                    infoTanggal = "Semua transaksi"
-                   viewModel.loadAll()
-                }
+//                LaporanMenuButton(
+//                    icon = R.drawable.all,
+//                    text = "Semua Transaksi"
+//                ) {
+//                    showJenis = JenisLaporan.SEMUA_TRANSAKSI
+//                    infoTanggal = "Semua transaksi"
+//                   viewModel.loadAll()
+//                }
 
                 if (showJenis != null) {
                     Spacer(Modifier.height(30.dp))
@@ -245,6 +245,7 @@ fun LaporanScreen(
             infoTanggal = infoTanggal,
             data = uiState.transaksiList,
             totalPendapatan = uiState.totalPendapatan,
+            totalPerJenisPembayaran = uiState.totalPerJenisPembayaran,
             onGeneratePdf = {
                 showPreview = false
                 PdfLaporanGenerator.generatePdfAndOpen(
@@ -455,6 +456,7 @@ fun PreviewLaporanDialog(
     infoTanggal: String,
     data: List<Transaksi>,
     totalPendapatan: Double,
+    totalPerJenisPembayaran: Map<String, Double>,
     onGeneratePdf: () -> Unit,
     onGenerateExcel: () -> Unit,
     onDismiss: () -> Unit
@@ -501,6 +503,14 @@ fun PreviewLaporanDialog(
                 Spacer(Modifier.height(8.dp))
                 Text("Jumlah Transaksi : ${data.size}")
                 Text("Total Pendapatan : Rp $totalPendapatan")
+                Spacer(Modifier.height(12.dp))
+                Text("Rincian Pembayaran", style = MaterialTheme.typography.titleSmall)
+
+                Spacer(Modifier.height(8.dp))
+
+                totalPerJenisPembayaran.forEach { (jenisPembayaran, total) ->
+                    Text("• $jenisPembayaran : Rp $total")
+                }
             }
         }
     )

@@ -105,4 +105,6 @@ dependencies {
     //Work Manager
     implementation ("androidx.work:work-runtime-ktx:2.9.0")
 
+    implementation("androidx.documentfile:documentfile:1.0.1")
+
 }

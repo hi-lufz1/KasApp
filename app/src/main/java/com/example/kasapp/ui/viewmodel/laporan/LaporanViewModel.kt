@@ -11,10 +11,12 @@ data class LaporanUiState(
     val isLoading: Boolean = false,
     val transaksiList: List<Transaksi> = emptyList(),
     val totalPendapatan: Double = 0.0,
+    val totalPerJenisPembayaran: Map<String, Double> = emptyMap(),
     val startTime: Long? = null,
     val endTime: Long? = null,
     val error: String? = null
 )
+
 
 class LaporanViewModel(
     private val repositoryTransaksi: RepositoryTransaksi
@@ -33,56 +35,65 @@ class LaporanViewModel(
                 )
             }
 
-            combine(
-                repositoryTransaksi.getTransaksiByDateRange(startTime, endTime),
-                repositoryTransaksi.getTotalPendapatanByDateRange(startTime, endTime)
-            ) { transaksi, total ->
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        transaksiList = transaksi,
-                        totalPendapatan = total ?: 0.0
-                    )
+            repositoryTransaksi
+                .getTransaksiByDateRange(startTime, endTime)
+                .catch { e ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = e.message)
+                    }
                 }
-            }.catch { e ->
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = e.message
-                    )
+                .collect { transaksi ->
+
+                    val totalPendapatan = transaksi.sumOf { it.jlhTransaksi }
+
+                    val totalPerJenis = transaksi
+                        .groupBy { it.jenisPembayaran }
+                        .mapValues { (_, list) ->
+                            list.sumOf { it.jlhTransaksi }
+                        }
+
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            transaksiList = transaksi,
+                            totalPendapatan = totalPendapatan,
+                            totalPerJenisPembayaran = totalPerJenis
+                        )
+                    }
                 }
-            }.collect()
         }
     }
+
 
     fun loadAll() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            try {
-                // Ambil semua transaksi
-                repositoryTransaksi.getAllTransaksi()
-                    .collect { transaksi ->
-                        // Hitung total pendapatan
-                        val total = transaksi.sumOf { it.jlhTransaksi }
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                transaksiList = transaksi,
-                                totalPendapatan = total,
-                                startTime = null,
-                                endTime = null
-                            )
-                        }
+            repositoryTransaksi.getAllTransaksi()
+                .catch { e ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = e.message)
                     }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = e.message
-                    )
                 }
-            }
+                .collect { transaksi ->
+
+                    val totalPendapatan = transaksi.sumOf { it.jlhTransaksi }
+
+                    val totalPerJenis = transaksi
+                        .groupBy { it.jenisPembayaran }
+                        .mapValues { it.value.sumOf { t -> t.jlhTransaksi } }
+
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            transaksiList = transaksi,
+                            totalPendapatan = totalPendapatan,
+                            totalPerJenisPembayaran = totalPerJenis,
+                            startTime = null,
+                            endTime = null
+                        )
+                    }
+                }
         }
     }
 

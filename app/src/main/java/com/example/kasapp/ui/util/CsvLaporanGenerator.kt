@@ -1,12 +1,12 @@
 package com.example.kasapp.ui.util
 
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.os.Environment
-import androidx.core.content.FileProvider
+import android.provider.MediaStore
 import com.example.kasapp.data.entity.Transaksi
 import com.example.kasapp.ui.view.laporan.JenisLaporan
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -20,60 +20,152 @@ object CsvLaporanGenerator {
         startTime: Long?,
         endTime: Long?
     ) {
-        val dir = File(
-            context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS),
-            "laporan"
-        )
-        if (!dir.exists()) dir.mkdirs()
-
+        val resolver = context.contentResolver
         val fileName = buildFileName(jenis, startTime, endTime)
-        val file = File(dir, fileName)
 
-        file.bufferedWriter().use { writer ->
+        val values = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, "text/csv")
+            put(
+                MediaStore.MediaColumns.RELATIVE_PATH,
+                Environment.DIRECTORY_DOCUMENTS + "/laporan"
+            )
+        }
+
+        val uri = resolver.insert(
+            MediaStore.Files.getContentUri("external"),
+            values
+        ) ?: return
+
+        resolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
+
+            /* ================= HEADER ================= */
+
             writer.appendLine("LAPORAN ${jenis.name}")
             writer.appendLine("KasApp")
 
             startTime?.let {
-                writer.appendLine(
-                    "Periode,${format(it)} - ${format(endTime!!)}"
-                )
+                writer.appendLine("Periode;${format(it)} - ${format(endTime!!)}")
             }
 
             writer.appendLine()
-            writer.appendLine("Jumlah Transaksi,${transaksi.size}")
-            writer.appendLine("Total Pendapatan,Rp ${formatRupiah(totalPendapatan)}")
+            writer.appendLine("Jumlah Transaksi;${transaksi.size}")
+            writer.appendLine("Total Pendapatan;Rp ${formatRupiah(totalPendapatan)}")
             writer.appendLine()
 
-            writer.appendLine("No,ID Transaksi,Tanggal,Total (Rp)")
+            /* ================= REKAP JENIS PEMBAYARAN ================= */
 
-            transaksi.forEachIndexed { index, trx ->
-                writer.appendLine(
-                    "${index + 1}," +
-                            "TRX-${trx.idTransaksi}," +
-                            format(trx.tglTransaksi) + "," +
-                            formatRupiah(trx.jlhTransaksi)
-                )
+            writer.appendLine("RINCIAN PEMBAYARAN")
+            transaksi.groupBy { it.jenisPembayaran }
+                .forEach { (jenisBayar, list) ->
+                    val total = list.sumOf { it.jlhTransaksi }
+                    writer.appendLine("$jenisBayar;Rp ${formatRupiah(total)}")
+                }
+
+            writer.appendLine()
+            writer.appendLine("================================")
+
+            /* ================= ISI LAPORAN ================= */
+
+            when (jenis) {
+
+                /* ========== BULANAN ========== */
+                JenisLaporan.BULANAN -> {
+                    val perHari = transaksi.groupBy { dayKey(it.tglTransaksi) }
+
+                    perHari.forEach { (_, listHarian) ->
+                        val tanggal = listHarian.first().tglTransaksi
+
+                        writer.appendLine()
+                        writer.appendLine(formatHari(tanggal))
+                        writer.appendLine("No;ID Transaksi;Pembayaran;Total")
+
+                        var totalHarian = 0.0
+
+                        listHarian.forEachIndexed { index, trx ->
+                            writer.appendLine(
+                                "${index + 1};TRX-${trx.idTransaksi};${trx.jenisPembayaran};${formatRupiah(trx.jlhTransaksi)}"
+                            )
+                            totalHarian += trx.jlhTransaksi
+                        }
+
+                        writer.appendLine(";;TOTAL HARIAN;${formatRupiah(totalHarian)}")
+                    }
+                }
+
+                /* ========== TAHUNAN ========== */
+                JenisLaporan.TAHUNAN -> {
+                    val perBulan = transaksi.groupBy { monthKey(it.tglTransaksi) }
+
+                    perBulan.forEach { (_, listBulanan) ->
+                        val bulan = listBulanan.first().tglTransaksi
+
+                        writer.appendLine()
+                        writer.appendLine(formatBulan(bulan).uppercase())
+
+                        var totalBulanan = 0.0
+                        val perHari = listBulanan.groupBy { dayKey(it.tglTransaksi) }
+
+                        perHari.forEach { (_, listHarian) ->
+                            val tanggal = listHarian.first().tglTransaksi
+
+                            writer.appendLine(formatHari(tanggal))
+                            writer.appendLine("No;ID Transaksi;Pembayaran;Total")
+
+                            var totalHarian = 0.0
+
+                            listHarian.forEachIndexed { index, trx ->
+                                writer.appendLine(
+                                    "${index + 1};TRX-${trx.idTransaksi};${trx.jenisPembayaran};${formatRupiah(trx.jlhTransaksi)}"
+                                )
+                                totalHarian += trx.jlhTransaksi
+                            }
+
+                            writer.appendLine(";;TOTAL HARIAN;${formatRupiah(totalHarian)}")
+                            writer.appendLine()
+
+                            totalBulanan += totalHarian
+                        }
+
+                        writer.appendLine(";;TOTAL BULAN ${formatBulan(bulan).uppercase()};${formatRupiah(totalBulanan)}")
+                    }
+
+                    writer.appendLine()
+                    writer.appendLine("TOTAL TAHUN;${formatRupiah(totalPendapatan)}")
+                }
+
+                else -> {}
             }
         }
 
-        val uri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.provider",
-            file
-        )
+        /* ================= OPEN CSV ================= */
 
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(uri, "text/csv")
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 
-        context.startActivity(intent)
+        context.startActivity(
+            Intent.createChooser(intent, "Buka laporan CSV")
+        )
     }
 
-    // ===== UTIL =====
+    /* ================= UTIL ================= */
 
     private fun format(time: Long): String =
         SimpleDateFormat("dd MMM yyyy", Locale("id")).format(Date(time))
+
+    private fun formatHari(time: Long): String =
+        SimpleDateFormat("dd MMM yyyy", Locale("id")).format(Date(time))
+
+    private fun formatBulan(time: Long): String =
+        SimpleDateFormat("MMMM yyyy", Locale("id")).format(Date(time))
+
+    private fun dayKey(time: Long): String =
+        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(time))
+
+    private fun monthKey(time: Long): String =
+        SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date(time))
 
     private fun formatRupiah(value: Double): String =
         "%,.0f".format(value)
