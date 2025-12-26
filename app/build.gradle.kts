@@ -105,7 +105,4 @@ dependencies {
     //Work Manager
     implementation ("androidx.work:work-runtime-ktx:2.9.0")
 
-    implementation ("org.apache.poi:poi:5.2.5")
-    implementation ("org.apache.poi:poi-ooxml:5.2.5")
-
 }

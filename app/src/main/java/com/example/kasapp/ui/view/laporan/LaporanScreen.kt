@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kasapp.R
 import com.example.kasapp.data.entity.Transaksi
-import com.example.kasapp.ui.util.ExcelLaporanGenerator
+import com.example.kasapp.ui.util.CsvLaporanGenerator
 import com.example.kasapp.ui.util.PdfLaporanGenerator
 import com.example.kasapp.ui.viewmodel.ViewModelFactory
 import com.example.kasapp.ui.viewmodel.laporan.LaporanViewModel
@@ -258,7 +258,7 @@ fun LaporanScreen(
             },
             onGenerateExcel = {
                 showPreview = false
-                ExcelLaporanGenerator.generateExcelAndOpen(
+                CsvLaporanGenerator.generateCsvAndOpen( // ✅ BENAR
                     context,
                     showJenis!!,
                     uiState.transaksiList,
