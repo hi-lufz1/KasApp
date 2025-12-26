@@ -44,7 +44,7 @@ class ChartRepository(
                     }
                     .sumOf { it.jlhTransaksi }
 
-                ChartData(label = dayNames[i], value = total)
+                ChartData(label = dayNames[i], value = total.toDouble())
             }
         }
     }
@@ -78,7 +78,7 @@ class ChartRepository(
                     }
                     .sumOf { it.jlhTransaksi }
 
-                ChartData(label = bulan, value = total)
+                ChartData(label = bulan, value = total.toDouble())
             }
         }
     }
@@ -93,7 +93,7 @@ class ChartRepository(
                     cal.get(Calendar.YEAR).toString()
                 }
                 .map { (year, data) ->
-                    ChartData(label = year, value = data.sumOf { it.jlhTransaksi })
+                    ChartData(label = year, value = data.sumOf { it.jlhTransaksi }.toDouble())
                 }
                 .sortedBy { it.label }
         }

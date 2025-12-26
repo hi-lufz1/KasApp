@@ -21,7 +21,7 @@ data class RiwayatUiState(
     val listTransaksi: List<Transaksi> = emptyList(),
     val filterJenis: String = "Semua", // "Semua", "QRIS", "Tunai"
     val tanggalDipilih: Long? = null, // Null = tampilkan semua tanggal
-    val totalPendapatan: Double = 0.0,
+    val totalPendapatan: Int = 0,
     val isLoading: Boolean = true,
     val isFilteringByDate: Boolean = false // Flag untuk tahu apakah sedang filter tanggal
 )

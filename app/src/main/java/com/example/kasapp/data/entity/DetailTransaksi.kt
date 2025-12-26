@@ -58,6 +58,6 @@ data class DetailTransaksi(
     // BIARKAN DETAILNYA TETAP LENGKAP
     val namaMenuSaatTransaksi: String,
     val jumlah: Int,
-    val hargaSaatTransaksi: Double
+    val hargaSaatTransaksi: Int
 )
 

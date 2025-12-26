@@ -10,8 +10,8 @@ import kotlinx.coroutines.launch
 data class LaporanUiState(
     val isLoading: Boolean = false,
     val transaksiList: List<Transaksi> = emptyList(),
-    val totalPendapatan: Double = 0.0,
-    val totalPerJenisPembayaran: Map<String, Double> = emptyMap(),
+    val totalPendapatan: Int = 0,
+    val totalPerJenisPembayaran: Map<String, Int> = emptyMap(),
     val startTime: Long? = null,
     val endTime: Long? = null,
     val error: String? = null

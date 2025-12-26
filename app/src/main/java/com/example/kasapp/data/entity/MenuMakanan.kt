@@ -8,6 +8,6 @@ data class MenuMakanan(
     @PrimaryKey(autoGenerate = true)
     val idMenu: Int = 0,
     val namaMenu: String,
-    val hargaMenu: Double,
+    val hargaMenu: Int,
     val jenisMenu: String
 )

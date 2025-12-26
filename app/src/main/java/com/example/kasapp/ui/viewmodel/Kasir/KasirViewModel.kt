@@ -24,7 +24,7 @@ data class CartItem(
     val menu: MenuMakanan,
     val quantity: Int = 1
 ) {
-    val subtotal: Double
+    val subtotal: Int
         get() = menu.hargaMenu * quantity
 }
 
@@ -41,7 +41,7 @@ data class KasirUiState(
     val isHistoryLoading: Boolean = false // <-- State loading untuk nota riwayat
 ) {
     // Properti turunan untuk menghitung total
-    val totalCartPrice: Double
+    val totalCartPrice: Int
         get() = cart.sumOf { it.subtotal }
 
     val totalCartItems: Int

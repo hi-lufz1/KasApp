@@ -227,7 +227,7 @@ fun HomeKasirView(
 
 @Composable
 private fun DraggableCheckoutButton(
-    totalHarga: Double,
+    totalHarga: Int,
     totalItem: Int,
     onClick: () -> Unit,
     offsetX: Float,
@@ -588,7 +588,7 @@ private fun QuantityControl(
     }
 }
 
-fun formatRupiah(amount: Double): String {
+fun formatRupiah(amount: Int): String {
     val localeID = Locale("in", "ID")
     val format = NumberFormat.getCurrencyInstance(localeID)
     format.maximumFractionDigits = 0

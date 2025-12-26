@@ -77,7 +77,7 @@ class InsertMenuViewModel(
         val menu = MenuMakanan(
             // idMenu akan autoGenerate oleh Room
             namaMenu = uiState.value.namaMenu,
-            hargaMenu = uiState.value.hargaMenu.toDouble(), // Konversi di sini
+            hargaMenu = uiState.value.hargaMenu.toInt(), // Konversi di sini
             jenisMenu = uiState.value.jenisMenu
         )
         // Simpan ke repository

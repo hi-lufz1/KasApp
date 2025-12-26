@@ -252,7 +252,7 @@ fun LaporanScreen(
                     context,
                     showJenis!!,
                     uiState.transaksiList,
-                    uiState.totalPendapatan,
+                    uiState.totalPendapatan.toDouble(),
                     uiState.startTime,
                     uiState.endTime
                 )
@@ -263,7 +263,7 @@ fun LaporanScreen(
                     context,
                     showJenis!!,
                     uiState.transaksiList,
-                    uiState.totalPendapatan,
+                    uiState.totalPendapatan.toInt(),
                     uiState.startTime,
                     uiState.endTime
                 )
@@ -455,8 +455,8 @@ fun PreviewLaporanDialog(
     jenis: JenisLaporan,
     infoTanggal: String,
     data: List<Transaksi>,
-    totalPendapatan: Double,
-    totalPerJenisPembayaran: Map<String, Double>,
+    totalPendapatan: Int,
+    totalPerJenisPembayaran: Map<String, Int>,
     onGeneratePdf: () -> Unit,
     onGenerateExcel: () -> Unit,
     onDismiss: () -> Unit

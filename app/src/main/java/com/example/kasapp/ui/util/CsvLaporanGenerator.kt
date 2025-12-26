@@ -16,7 +16,7 @@ object CsvLaporanGenerator {
         context: Context,
         jenis: JenisLaporan,
         transaksi: List<Transaksi>,
-        totalPendapatan: Double,
+        totalPendapatan: Int,
         startTime: Long?,
         endTime: Long?
     ) {
@@ -70,16 +70,14 @@ object CsvLaporanGenerator {
             when (jenis) {
 
                 JenisLaporan.HARIAN -> {
-
                     writer.appendLine()
                     writer.appendLine("No;ID Transaksi;Tanggal;Pembayaran;Total (Rp)")
 
                     transaksi.forEachIndexed { index, trx ->
                         writer.appendLine(
-                            "${index + 1};" +
-                                    "TRX-${trx.idTransaksi};" +
-                                    format(trx.tglTransaksi) + ";" +
-                                    trx.jenisPembayaran + ";" +
+                            "${index + 1};TRX-${trx.idTransaksi};" +
+                                    "${format(trx.tglTransaksi)};" +
+                                    "${trx.jenisPembayaran};" +
                                     formatRupiah(trx.jlhTransaksi)
                         )
                     }
@@ -96,7 +94,7 @@ object CsvLaporanGenerator {
                         writer.appendLine(formatHari(tanggal))
                         writer.appendLine("No;ID Transaksi;Pembayaran;Total")
 
-                        var totalHarian = 0.0
+                        var totalHarian = 0
 
                         listHarian.forEachIndexed { index, trx ->
                             writer.appendLine(
@@ -119,7 +117,7 @@ object CsvLaporanGenerator {
                         writer.appendLine()
                         writer.appendLine(formatBulan(bulan).uppercase())
 
-                        var totalBulanan = 0.0
+                        var totalBulanan = 0
                         val perHari = listBulanan.groupBy { dayKey(it.tglTransaksi) }
 
                         perHari.forEach { (_, listHarian) ->
@@ -128,7 +126,7 @@ object CsvLaporanGenerator {
                             writer.appendLine(formatHari(tanggal))
                             writer.appendLine("No;ID Transaksi;Pembayaran;Total")
 
-                            var totalHarian = 0.0
+                            var totalHarian = 0
 
                             listHarian.forEachIndexed { index, trx ->
                                 writer.appendLine(
@@ -143,7 +141,9 @@ object CsvLaporanGenerator {
                             totalBulanan += totalHarian
                         }
 
-                        writer.appendLine(";;TOTAL BULAN ${formatBulan(bulan).uppercase()};${formatRupiah(totalBulanan)}")
+                        writer.appendLine(
+                            ";;TOTAL BULAN ${formatBulan(bulan).uppercase()};${formatRupiah(totalBulanan)}"
+                        )
                     }
 
                     writer.appendLine()
@@ -154,16 +154,12 @@ object CsvLaporanGenerator {
             }
         }
 
-        /* ================= OPEN CSV ================= */
-
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(uri, "text/csv")
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 
-        context.startActivity(
-            Intent.createChooser(intent, "Buka laporan CSV")
-        )
+        context.startActivity(Intent.createChooser(intent, "Buka laporan CSV"))
     }
 
     /* ================= UTIL ================= */
@@ -183,8 +179,8 @@ object CsvLaporanGenerator {
     private fun monthKey(time: Long): String =
         SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date(time))
 
-    private fun formatRupiah(value: Double): String =
-        "%,.0f".format(value)
+    private fun formatRupiah(value: Int): String =
+        "%,d".format(value)
 
     private fun buildFileName(
         jenis: JenisLaporan,

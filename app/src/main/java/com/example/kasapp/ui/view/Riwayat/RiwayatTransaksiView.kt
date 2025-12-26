@@ -320,7 +320,7 @@ private fun RiwayatItemCard(
 
 // --- Helper Functions ---
 
-private fun formatRupiah(amount: Double): String {
+private fun formatRupiah(amount: Int): String {
     val localeID = Locale("in", "ID")
     val format = NumberFormat.getCurrencyInstance(localeID)
     format.maximumFractionDigits = 0

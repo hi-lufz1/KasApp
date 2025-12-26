@@ -21,7 +21,7 @@ import java.text.NumberFormat
 import java.util.Locale
 
 // Fungsi helper untuk format mata uang
-fun formatRupiah(amount: Double): String {
+fun formatRupiah(amount: Int): String {
     val localeID = Locale("in", "ID")
     val format = NumberFormat.getCurrencyInstance(localeID)
     format.maximumFractionDigits = 0 // Hilangkan desimal

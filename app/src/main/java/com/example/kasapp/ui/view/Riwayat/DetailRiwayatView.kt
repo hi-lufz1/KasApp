@@ -416,7 +416,7 @@ fun formatWaktuOnly(timestamp: Long): String {
     return sdf.format(Date(timestamp))
 }
 
-private fun formatRupiah(amount: Double): String {
+private fun formatRupiah(amount: Int): String {
     val localeID = Locale("in", "ID")
     val format = NumberFormat.getCurrencyInstance(localeID)
     format.maximumFractionDigits = 0

@@ -116,7 +116,7 @@ class UpdateMenuViewModel(
         val menuToUpdate = MenuMakanan(
             idMenu = currentState.idMenu, // Gunakan ID asli
             namaMenu = currentState.namaMenu,
-            hargaMenu = currentState.hargaMenu.toDouble(),
+            hargaMenu = currentState.hargaMenu.toInt(),
             jenisMenu = currentState.jenisMenu
         )
         // Update ke repository
