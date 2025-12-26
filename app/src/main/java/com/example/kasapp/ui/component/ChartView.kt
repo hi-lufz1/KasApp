@@ -51,7 +51,7 @@ fun ChartSection(
 
     // ---------- State Scroll ----------
     val scrollState = rememberLazyListState()
-    val showScrollIndicator = dataList.size > 8
+    val showScrollIndicator = dataList.size > 6
 
     Column(
         modifier = Modifier.fillMaxWidth()

@@ -69,6 +69,22 @@ object CsvLaporanGenerator {
 
             when (jenis) {
 
+                JenisLaporan.HARIAN -> {
+
+                    writer.appendLine()
+                    writer.appendLine("No;ID Transaksi;Tanggal;Pembayaran;Total (Rp)")
+
+                    transaksi.forEachIndexed { index, trx ->
+                        writer.appendLine(
+                            "${index + 1};" +
+                                    "TRX-${trx.idTransaksi};" +
+                                    format(trx.tglTransaksi) + ";" +
+                                    trx.jenisPembayaran + ";" +
+                                    formatRupiah(trx.jlhTransaksi)
+                        )
+                    }
+                }
+
                 /* ========== BULANAN ========== */
                 JenisLaporan.BULANAN -> {
                     val perHari = transaksi.groupBy { dayKey(it.tglTransaksi) }

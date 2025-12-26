@@ -140,6 +140,34 @@ object PdfLaporanGenerator {
 
         when (jenis) {
 
+            /* ========== HARIAN (PER TRANSAKSI) ========== */
+            JenisLaporan.HARIAN -> {
+
+                paint.isFakeBoldText = true
+                canvas.drawText("No", margin, y, paint)
+                canvas.drawText("ID", margin + 40, y, paint)
+                canvas.drawText("Tanggal", margin + 120, y, paint)
+                canvas.drawText("Pembayaran", margin + 260, y, paint)
+                canvas.drawText("Total (Rp)", margin + 400, y, paint)
+                paint.isFakeBoldText = false
+
+                y += 14
+                canvas.drawLine(margin, y, pageWidth - margin, y, paint)
+                y += 16
+
+                transaksi.forEachIndexed { index, trx ->
+                    if (y > pageHeight - 80) newPage()
+
+                    canvas.drawText("${index + 1}", margin, y, paint)
+                    canvas.drawText("TRX-${trx.idTransaksi}", margin + 40, y, paint)
+                    canvas.drawText(format(trx.tglTransaksi), margin + 120, y, paint)
+                    canvas.drawText(trx.jenisPembayaran, margin + 260, y, paint)
+                    canvas.drawText("%,.0f".format(trx.jlhTransaksi), margin + 400, y, paint)
+
+                    y += 18
+                }
+            }
+
             /* ========== BULANAN ========== */
             JenisLaporan.BULANAN -> {
                 val perHari = transaksi.groupBy { dayKey(it.tglTransaksi) }
