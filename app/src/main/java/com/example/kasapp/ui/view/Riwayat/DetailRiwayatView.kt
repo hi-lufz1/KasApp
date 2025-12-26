@@ -419,6 +419,7 @@ fun formatWaktuOnly(timestamp: Long): String {
 private fun formatRupiah(amount: Double): String {
     val localeID = Locale("in", "ID")
     val format = NumberFormat.getCurrencyInstance(localeID)
-    format.maximumFractionDigits = 2
-    return format.format(amount).replace("Rp", "IDR")
+    format.maximumFractionDigits = 0
+    format.minimumFractionDigits = 0
+    return format.format(amount)
 }

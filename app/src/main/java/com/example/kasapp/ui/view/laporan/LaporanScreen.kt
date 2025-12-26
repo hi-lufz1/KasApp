@@ -122,7 +122,7 @@ fun LaporanScreen(
                 Spacer(Modifier.height(40.dp))
 
                 LaporanMenuButton(
-                    icon = R.drawable.calendar,
+                    icon = R.drawable.daily,
                     text = "Laporan Harian"
                 ) {
                     showJenis = JenisLaporan.HARIAN
@@ -132,7 +132,7 @@ fun LaporanScreen(
                 Spacer(Modifier.height(20.dp))
 
                 LaporanMenuButton(
-                    icon = R.drawable.cloudupload,
+                    icon = R.drawable.month,
                     text = "Laporan Bulanan"
                 ) {
                     showJenis = JenisLaporan.BULANAN
@@ -142,7 +142,7 @@ fun LaporanScreen(
                 Spacer(Modifier.height(20.dp))
 
                 LaporanMenuButton(
-                    icon = R.drawable.receipt,
+                    icon = R.drawable.all,
                     text = "Semua Transaksi"
                 ) {
                     showJenis = JenisLaporan.SEMUA_TRANSAKSI
@@ -247,7 +247,8 @@ fun LaporanMenuButton(
         Icon(
             painter = painterResource(id = icon),
             contentDescription = null,
-            tint = Color.Black,
+            tint = Color.Unspecified,
+//            tint = Color.Black,
             modifier = Modifier.size(28.dp)
         )
         Spacer(Modifier.width(15.dp))

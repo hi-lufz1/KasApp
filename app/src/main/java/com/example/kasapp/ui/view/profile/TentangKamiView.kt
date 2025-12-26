@@ -30,8 +30,8 @@ fun TentangKamiView(
         Font(R.font.poltawski_nowy, FontWeight.Bold)
     )
 
-    val BackgroundCream = Color(0xFFFEF3D5)
-    val TopBarYellow = Color(0xFFFEF3D5)
+    val BackgroundCream = Color(0xFFFFE0A1)
+    val TopBarYellow = Color(0xFFFFE0A1)
     val TextColorBrown = Color(0xFF744A00)
 
     Scaffold(
@@ -116,7 +116,7 @@ fun TentangKamiView(
 
             // --- GAMBAR FULL (Di luar wrapper teks) ---
             Image(
-                painter = painterResource(id = R.drawable.kami),
+                painter = painterResource(id = R.drawable.tim),
                 contentDescription = "Foto Kami",
                 modifier = Modifier
                     .fillMaxWidth(), // Lebar penuh mentok kanan kiri
@@ -124,7 +124,7 @@ fun TentangKamiView(
             )
 
             // Spacer bawah
-            Spacer(modifier = Modifier.height(40.dp))
+//            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }

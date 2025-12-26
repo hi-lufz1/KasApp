@@ -21,7 +21,7 @@ import kotlinx.coroutines.withContext
 fun SuccessView(
     onNavigateBack: () -> Unit // Fungsi untuk kembali ke halaman sebelumnya
 ) {
-    val backgroundColor = Color(0xFFFFF1D2) // Warna cream
+    val backgroundColor = Color(0xFFFEBC2F) // Warna cream
 
     // Efek agar kembali otomatis setelah beberapa detik
     LaunchedEffect(Unit) {

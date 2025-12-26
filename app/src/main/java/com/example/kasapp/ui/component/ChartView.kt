@@ -51,7 +51,7 @@ fun ChartSection(
 
     // ---------- State Scroll ----------
     val scrollState = rememberLazyListState()
-    val showScrollIndicator = dataList.size > 6
+    val showScrollIndicator = dataList.size > 8
 
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -119,8 +119,8 @@ fun ChartSection(
                             modifier = Modifier
                                 .height(maxHeight)
 //                                .width(if (dataList.size > 8) 32.dp else 40.dp)
-                                .width(36.dp)
-                                .clip(RoundedCornerShape(8.dp))
+                                .width(16.dp)
+                                .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
                                 .background(Color.White)
                         ) {
                             Box(
@@ -128,7 +128,7 @@ fun ChartSection(
                                     .fillMaxWidth()
                                     .height(normalizedHeight.dp)
                                     .align(Alignment.BottomCenter)
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
                                     .background(Color(0xFFFFC107))
                             )
                         }

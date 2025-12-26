@@ -71,7 +71,7 @@ fun MenuItemCard(
                 .fillMaxSize()
                 .padding(end = 60.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFD6E3FF)),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFCCFFCD)),
             onClick = onEditClick // Panggil onEditClick saat Card diklik
         ) {
             Box(
