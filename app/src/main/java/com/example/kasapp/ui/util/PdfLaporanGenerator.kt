@@ -269,10 +269,6 @@ object PdfLaporanGenerator {
                     paint.isFakeBoldText = false
                     y += 30
                 }
-
-                paint.isFakeBoldText = true
-                canvas.drawText("TOTAL TAHUN : Rp %,.0f".format(totalPendapatan), margin, y, paint)
-                paint.isFakeBoldText = false
             }
 
             else -> {}

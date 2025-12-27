@@ -3,6 +3,7 @@ package com.example.kasapp.ui.view.menu
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -10,11 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.example.kasapp.R
 import kotlinx.coroutines.delay
 // --- TAMBAHAN IMPORT DISPATCHERS ---
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
 // ----------------------------------
 
 @Composable
@@ -39,14 +44,17 @@ fun SuccessView(
             .background(backgroundColor),
         contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.successs), // Panggil gambar Anda
-            contentDescription = "Sukses",
-            modifier = Modifier
-                .fillMaxWidth(0.5f) // Atur lebar gambar (misal 80% lebar layar)
-                .aspectRatio(1f), // Jaga rasio aspek gambar (jika perlu)
-            contentScale = ContentScale.Fit // Sesuaikan skala gambar
-        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Image(
+                painter = painterResource(id = R.drawable.successs), // Panggil gambar Anda
+                contentDescription = "Sukses",
+                modifier = Modifier
+                    .fillMaxWidth(0.5f) // Atur lebar gambar (misal 80% lebar layar)
+                    .aspectRatio(1f), // Jaga rasio aspek gambar (jika perlu)
+                contentScale = ContentScale.Fit // Sesuaikan skala gambar
+            )
+            Text(text = "Sukses!", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 24.sp)
+        }
     }
 }
 

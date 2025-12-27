@@ -119,7 +119,7 @@ fun HomeScreen(
                 ) {
                     var expanded by remember { mutableStateOf(false) }
                     var selectedPeriodText by remember { mutableStateOf("Hari ini") }
-                    val options = listOf("Hari ini", "Minggu ini", "Bulan ini", "Tahun ini")
+                    val options = listOf("Hari ini", "Bulan ini", "Tahun ini")
 
                     Column {
                         // Bagian atas: judul dan dropdown

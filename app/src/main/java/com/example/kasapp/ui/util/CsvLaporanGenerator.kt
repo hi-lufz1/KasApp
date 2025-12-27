@@ -39,41 +39,46 @@ object CsvLaporanGenerator {
 
         resolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
 
-            /* ================= HEADER ================= */
+            // Tambahkan BOM untuk UTF-8 agar Excel mengenali encoding dengan benar
+            writer.write("\uFEFF")
+
+            /* ================= HEADER METADATA ================= */
 
             writer.appendLine("LAPORAN ${jenis.name}")
             writer.appendLine("KasApp")
+            writer.appendLine()
 
             startTime?.let {
-                writer.appendLine("Periode;${format(it)} - ${format(endTime!!)}")
+                writer.appendLine("Periode:;${format(it)} - ${format(endTime!!)}")
             }
 
-            writer.appendLine()
-            writer.appendLine("Jumlah Transaksi;${transaksi.size}")
-            writer.appendLine("Total Pendapatan;Rp ${formatRupiah(totalPendapatan)}")
+            writer.appendLine("Jumlah Transaksi:;${transaksi.size}")
+            writer.appendLine("Total Pendapatan:;${formatRupiah(totalPendapatan)}")
             writer.appendLine()
 
             /* ================= REKAP JENIS PEMBAYARAN ================= */
 
             writer.appendLine("RINCIAN PEMBAYARAN")
+            writer.appendLine("Jenis Pembayaran;Jumlah (Rp)")
+
             transaksi.groupBy { it.jenisPembayaran }
                 .forEach { (jenisBayar, list) ->
                     val total = list.sumOf { it.jlhTransaksi }
-                    writer.appendLine("$jenisBayar;Rp ${formatRupiah(total)}")
+                    writer.appendLine("$jenisBayar;${formatRupiah(total)}")
                 }
 
             writer.appendLine()
-            writer.appendLine("================================")
+            writer.appendLine()
 
-            /* ================= ISI LAPORAN ================= */
+            /* ================= DATA TRANSAKSI (FLAT TABLE) ================= */
 
             when (jenis) {
 
                 JenisLaporan.HARIAN -> {
-                    writer.appendLine()
-                    writer.appendLine("No;ID Transaksi;Tanggal;Pembayaran;Total (Rp)")
+                    writer.appendLine("DETAIL TRANSAKSI")
+                    writer.appendLine("No;ID Transaksi;Tanggal;Jenis Pembayaran;Total (Rp)")
 
-                    transaksi.forEachIndexed { index, trx ->
+                    transaksi.sortedBy { it.tglTransaksi }.forEachIndexed { index, trx ->
                         writer.appendLine(
                             "${index + 1};TRX-${trx.idTransaksi};" +
                                     "${format(trx.tglTransaksi)};" +
@@ -83,71 +88,33 @@ object CsvLaporanGenerator {
                     }
                 }
 
-                /* ========== BULANAN ========== */
                 JenisLaporan.BULANAN -> {
-                    val perHari = transaksi.groupBy { dayKey(it.tglTransaksi) }
+                    writer.appendLine("DETAIL TRANSAKSI")
+                    writer.appendLine("No;ID Transaksi;Tanggal;Jenis Pembayaran;Total (Rp)")
 
-                    perHari.forEach { (_, listHarian) ->
-                        val tanggal = listHarian.first().tglTransaksi
-
-                        writer.appendLine()
-                        writer.appendLine(formatHari(tanggal))
-                        writer.appendLine("No;ID Transaksi;Pembayaran;Total")
-
-                        var totalHarian = 0
-
-                        listHarian.forEachIndexed { index, trx ->
-                            writer.appendLine(
-                                "${index + 1};TRX-${trx.idTransaksi};${trx.jenisPembayaran};${formatRupiah(trx.jlhTransaksi)}"
-                            )
-                            totalHarian += trx.jlhTransaksi
-                        }
-
-                        writer.appendLine(";;TOTAL HARIAN;${formatRupiah(totalHarian)}")
+                    transaksi.sortedBy { it.tglTransaksi }.forEachIndexed { index, trx ->
+                        writer.appendLine(
+                            "${index + 1};TRX-${trx.idTransaksi};" +
+                                    "${format(trx.tglTransaksi)};" +
+                                    "${trx.jenisPembayaran};" +
+                                    formatRupiah(trx.jlhTransaksi)
+                        )
                     }
                 }
 
-                /* ========== TAHUNAN ========== */
                 JenisLaporan.TAHUNAN -> {
-                    val perBulan = transaksi.groupBy { monthKey(it.tglTransaksi) }
+                    writer.appendLine("DETAIL TRANSAKSI")
+                    writer.appendLine("No;ID Transaksi;Tanggal;Bulan;Jenis Pembayaran;Total (Rp)")
 
-                    perBulan.forEach { (_, listBulanan) ->
-                        val bulan = listBulanan.first().tglTransaksi
-
-                        writer.appendLine()
-                        writer.appendLine(formatBulan(bulan).uppercase())
-
-                        var totalBulanan = 0
-                        val perHari = listBulanan.groupBy { dayKey(it.tglTransaksi) }
-
-                        perHari.forEach { (_, listHarian) ->
-                            val tanggal = listHarian.first().tglTransaksi
-
-                            writer.appendLine(formatHari(tanggal))
-                            writer.appendLine("No;ID Transaksi;Pembayaran;Total")
-
-                            var totalHarian = 0
-
-                            listHarian.forEachIndexed { index, trx ->
-                                writer.appendLine(
-                                    "${index + 1};TRX-${trx.idTransaksi};${trx.jenisPembayaran};${formatRupiah(trx.jlhTransaksi)}"
-                                )
-                                totalHarian += trx.jlhTransaksi
-                            }
-
-                            writer.appendLine(";;TOTAL HARIAN;${formatRupiah(totalHarian)}")
-                            writer.appendLine()
-
-                            totalBulanan += totalHarian
-                        }
-
+                    transaksi.sortedBy { it.tglTransaksi }.forEachIndexed { index, trx ->
                         writer.appendLine(
-                            ";;TOTAL BULAN ${formatBulan(bulan).uppercase()};${formatRupiah(totalBulanan)}"
+                            "${index + 1};TRX-${trx.idTransaksi};" +
+                                    "${format(trx.tglTransaksi)};" +
+                                    "${formatBulan(trx.tglTransaksi)};" +
+                                    "${trx.jenisPembayaran};" +
+                                    formatRupiah(trx.jlhTransaksi)
                         )
                     }
-
-                    writer.appendLine()
-                    writer.appendLine("TOTAL TAHUN;${formatRupiah(totalPendapatan)}")
                 }
 
                 else -> {}
@@ -167,20 +134,11 @@ object CsvLaporanGenerator {
     private fun format(time: Long): String =
         SimpleDateFormat("dd MMM yyyy", Locale("id")).format(Date(time))
 
-    private fun formatHari(time: Long): String =
-        SimpleDateFormat("dd MMM yyyy", Locale("id")).format(Date(time))
-
     private fun formatBulan(time: Long): String =
         SimpleDateFormat("MMMM yyyy", Locale("id")).format(Date(time))
 
-    private fun dayKey(time: Long): String =
-        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(time))
-
-    private fun monthKey(time: Long): String =
-        SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date(time))
-
     private fun formatRupiah(value: Int): String =
-        "%,d".format(value)
+        "%,d".format(Locale("id"), value)
 
     private fun buildFileName(
         jenis: JenisLaporan,

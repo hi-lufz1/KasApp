@@ -144,7 +144,7 @@ fun LaporanScreen(
                 Spacer(Modifier.height(20.dp))
 
                 LaporanMenuButton(
-                    icon = R.drawable.calendar,
+                    icon = R.drawable.year,
                     text = "Laporan Tahunan"
                 ) {
                     showJenis = JenisLaporan.TAHUNAN
@@ -345,7 +345,8 @@ fun MonthYearPicker(
 ) {
     val cal = Calendar.getInstance()
     var month by remember { mutableStateOf(cal.get(Calendar.MONTH)) }
-    var year by remember { mutableStateOf(cal.get(Calendar.YEAR)) }
+    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+    var year by remember { mutableStateOf(currentYear) }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.padding(16.dp)) {
@@ -358,13 +359,16 @@ fun MonthYearPicker(
 
             Spacer(Modifier.height(12.dp))
 
+            val years = (currentYear - 10..currentYear).toList()
+
             DropdownSelector(
-                "Tahun",
-                year.toString(),
-                (year - 5..year + 5).map { it.toString() }
-            ) {
-                year = it.toInt()
+                label = "Tahun",
+                value = year.toString(),
+                items = years.map { it.toString() }
+            ) { index ->
+                year = years[index]
             }
+
 
             Spacer(Modifier.height(24.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
