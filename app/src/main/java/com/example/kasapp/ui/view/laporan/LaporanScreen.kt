@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,7 +58,8 @@ fun LaporanScreen(
                 title = {
                     Text(
                         text = "Laporan",
-                        fontSize = 22.sp,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
                         color = Color.Black
                     )
                 },
@@ -66,6 +68,7 @@ fun LaporanScreen(
                         painter = painterResource(id = R.drawable.back),
                         contentDescription = "Back",
                         modifier = Modifier
+                            .padding(start = 5.dp)
                             .size(45.dp)
                             .padding(4.dp)
                             .clickable { onBackClick() },
@@ -73,9 +76,8 @@ fun LaporanScreen(
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                ),
-                windowInsets = WindowInsets(0.dp)
+                    containerColor = Color(0xFFFFFFFF)
+                )
             )
         }
     ) { padding ->
@@ -400,7 +402,9 @@ fun DropdownSelector(
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
-            modifier = Modifier.fillMaxWidth().menuAnchor()
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor()
         )
 
         ExposedDropdownMenu(expanded, { expanded = false }) {

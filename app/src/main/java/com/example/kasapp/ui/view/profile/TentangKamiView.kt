@@ -12,10 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kasapp.R
@@ -25,9 +28,9 @@ import com.example.kasapp.R
 fun TentangKamiView(
     onBackClick: () -> Unit
 ) {
-    val poltawskiNowyFamily = FontFamily(
-        Font(R.font.poltawski_nowy, FontWeight.Normal),
-        Font(R.font.poltawski_nowy, FontWeight.Bold)
+    // Font Adamina Regular
+    val adaminaFamily = FontFamily(
+        Font(R.font.adamina_regular, FontWeight.Normal)
     )
 
     val BackgroundCream = Color(0xFFFFE0A1)
@@ -40,10 +43,9 @@ fun TentangKamiView(
                 title = {
                     Text(
                         text = "Tentang Kami",
-                        fontSize = 22.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
-                        modifier = Modifier.padding(start = 8.dp)
+                        color = Color.Black
                     )
                 },
                 navigationIcon = {
@@ -51,16 +53,16 @@ fun TentangKamiView(
                         painter = painterResource(id = R.drawable.back),
                         contentDescription = "Back",
                         modifier = Modifier
-                            .size(55.dp)
-                            .padding(start = 8.dp, top = 4.dp, bottom = 4.dp, end = 4.dp)
+                            .padding(start = 5.dp)
+                            .size(45.dp)
+                            .padding(4.dp)
                             .clickable { onBackClick() },
                         contentScale = ContentScale.Fit
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = TopBarYellow
-                ),
-                windowInsets = WindowInsets(0.dp)
+                    containerColor = Color(0xFFFFE0A1)
+                )
             )
         },
         containerColor = BackgroundCream
@@ -75,35 +77,65 @@ fun TentangKamiView(
 
             // --- WRAPPER TEKS (Diberi Padding Kanan-Kiri) ---
             Column(
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp)
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp)
             ) {
-                Spacer(modifier = Modifier.height(10.dp))
+                Image(
+                    painter = painterResource(id = R.drawable.awalterbentuk),
+                    contentDescription = "Foto Kami",
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    contentScale = ContentScale.FillWidth
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
                     text = "Kass App lahir dari project Capstone mahasiswa Program Studi Teknologi Informasi, Universitas Muhammadiyah Yogyakarta.",
-                    fontFamily = poltawskiNowyFamily,
+                    fontFamily = adaminaFamily,
                     fontSize = 16.sp,
                     color = TextColorBrown,
                     lineHeight = 24.sp,
                     textAlign = TextAlign.Justify
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
+                // Text dengan warna berbeda untuk Warmindo, Raja, Vitamin
                 Text(
-                    text = "Aplikasi ini dikembangkan melalui kerja sama dengan Warmindo Raja Vitamin 3, berawal dari kebutuhan nyata pemilik usaha dalam mengelola transaksi tunai dan QRIS yang selama ini masih terpisah dan harus dihitung manual.",
-                    fontFamily = poltawskiNowyFamily,
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = TextColorBrown)) {
+                            append("Aplikasi ini dikembangkan melalui kerja sama dengan ")
+                        }
+                        withStyle(style = SpanStyle(color = Color(0xFFDC143C))) { // Merah
+                            append("Warmindo")
+                        }
+                        withStyle(style = SpanStyle(color = TextColorBrown)) {
+                            append(" ")
+                        }
+                        withStyle(style = SpanStyle(color = Color(0xFFFFD700))) { // Kuning/Gold
+                            append("Raja")
+                        }
+                        withStyle(style = SpanStyle(color = TextColorBrown)) {
+                            append(" ")
+                        }
+                        withStyle(style = SpanStyle(color = Color(0xFF32CD32))) { // Hijau
+                            append("Vitamin")
+                        }
+                        withStyle(style = SpanStyle(color = TextColorBrown)) {
+                            append(" 3, berawal dari kebutuhan nyata pemilik usaha dalam mengelola transaksi tunai dan QRIS yang selama ini masih terpisah dan harus dihitung manual.")
+                        }
+                    },
+                    fontFamily = adaminaFamily,
                     fontSize = 16.sp,
-                    color = TextColorBrown,
                     lineHeight = 24.sp,
                     textAlign = TextAlign.Justify
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
                     text = "Melalui Kass App, pencatatan keuangan menjadi lebih sederhana dan terintegrasi — mulai dari transaksi harian, mingguan, bulanan, hingga riwayat dan pencadangan data. Tujuannya satu: membantu pemilik usaha memantau keuangan dengan mudah, cepat, dan rapi hanya melalui satu aplikasi.",
-                    fontFamily = poltawskiNowyFamily,
+                    fontFamily = adaminaFamily,
                     fontSize = 16.sp,
                     color = TextColorBrown,
                     lineHeight = 24.sp,
@@ -113,18 +145,22 @@ fun TentangKamiView(
                 // Jarak antara teks terakhir dan gambar
                 Spacer(modifier = Modifier.height(32.dp))
             }
+            Image(
+                painter = painterResource(id = R.drawable.kaminew),
+                contentDescription = "Foto Kami",
+                modifier = Modifier
+                    .fillMaxWidth(),
+                contentScale = ContentScale.FillWidth
+            )
 
             // --- GAMBAR FULL (Di luar wrapper teks) ---
             Image(
                 painter = painterResource(id = R.drawable.tim),
                 contentDescription = "Foto Kami",
                 modifier = Modifier
-                    .fillMaxWidth(), // Lebar penuh mentok kanan kiri
+                    .fillMaxWidth(),
                 contentScale = ContentScale.FillWidth
             )
-
-            // Spacer bawah
-//            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }

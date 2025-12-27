@@ -45,6 +45,13 @@ object SuccessScreen : Destinasi {
 }
 
 /**
+ * Destinasi untuk Halaman Sukses Kasir
+ */
+object SuccessKasir : Destinasi {
+    override val route = "success_kasir"
+}
+
+/**
  * Destinasi untuk Halaman Kasir
  */
 object Kasir : Destinasi {

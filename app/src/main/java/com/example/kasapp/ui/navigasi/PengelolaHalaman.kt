@@ -29,6 +29,7 @@ import com.example.kasapp.ui.view.profile.TentangKamiView
 import com.example.kasapp.ui.viewmodel.Kasir.KasirViewModel
 import com.example.kasapp.ui.viewmodel.LoginViewModel
 import com.example.kasapp.ui.view.Riwayat.DetailRiwayatView
+import com.example.kasapp.ui.view.kasir.SuccessViewKasir
 import com.example.kasapp.ui.viewmodel.ViewModelFactory
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -146,16 +147,23 @@ fun PengelolaHalaman(
 
             SuccessView(
                 onNavigateBack = {
-                    if (previousRoute == RincianPesanan.route) {
-                        navController.navigate(NotaPesanan.route) {
-                            popUpTo(Kasir.route) { inclusive = false }
-                        }
-                    } else if (previousRoute == InsertMenu.route || previousRoute == UpdateMenu.route) {
+                    if (previousRoute == InsertMenu.route || previousRoute?.startsWith(UpdateMenu.route) == true) {
                         navController.navigate(HomeMenu.route) {
                             popUpTo(HomeMenu.route) { inclusive = true }
                         }
                     } else {
                         navController.popBackStack()
+                    }
+                }
+            )
+        }
+
+        // ================= SUCCESS KASIR =================
+        composable(route = SuccessKasir.route) {
+            SuccessViewKasir(
+                onNavigateBack = {
+                    navController.navigate(NotaPesanan.route) {
+                        popUpTo(RincianPesanan.route) { inclusive = true }
                     }
                 }
             )
@@ -189,7 +197,7 @@ fun PengelolaHalaman(
                 viewModel = kasirViewModel,
                 onBackClick = { navController.popBackStack() },
                 onSaveClick = {
-                    navController.navigate(SuccessScreen.route)
+                    navController.navigate(SuccessKasir.route)
                 }
             )
         }

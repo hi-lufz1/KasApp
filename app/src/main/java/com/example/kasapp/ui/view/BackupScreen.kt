@@ -49,7 +49,8 @@ fun BackupScreen(
                 title = {
                     Text(
                         text = "Backup Data",
-                        fontSize = 22.sp,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
                         color = Color.Black
                     )
                 },
@@ -58,14 +59,16 @@ fun BackupScreen(
                         painter = painterResource(id = R.drawable.back),
                         contentDescription = "Back",
                         modifier = Modifier
+                            .padding(start = 5.dp)
                             .size(45.dp)
                             .padding(4.dp)
                             .clickable { onBackClick() },
                         contentScale = ContentScale.Fit
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
-                windowInsets = WindowInsets(0.dp)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                )
             )
         }
     ) { paddingValues ->

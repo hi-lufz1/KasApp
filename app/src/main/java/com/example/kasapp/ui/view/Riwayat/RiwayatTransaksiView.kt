@@ -186,7 +186,7 @@ private fun RiwayatTopBar(
         title = {
             Text(
                 text = "Riwayat Transaksi",
-                fontSize = 22.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
@@ -196,7 +196,8 @@ private fun RiwayatTopBar(
                 painter = painterResource(id = R.drawable.back),
                 contentDescription = "Back",
                 modifier = Modifier
-                    .size(55.dp)
+                    .padding(start = 5.dp)
+                    .size(45.dp)
                     .padding(4.dp)
                     .clickable { onBackClick() },
                 contentScale = ContentScale.Fit
@@ -211,8 +212,9 @@ private fun RiwayatTopBar(
                 )
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = backgroundColor),
-        windowInsets = WindowInsets(0.dp)
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = backgroundColor
+        )
     )
 }
 

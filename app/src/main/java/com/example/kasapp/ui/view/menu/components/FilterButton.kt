@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun FilterButton(
+    modifier: Modifier = Modifier, // ✅ PENTING
     text: String,
     count: Int,
     selected: Boolean,
@@ -27,23 +28,20 @@ fun FilterButton(
     val selectedBg = Color(0xFFFFE0B2)
     val unselectedBg = Color.White
     val borderColor = Color(0xFFFF9800)
-    val selectedBorderColor = Color(0xFFFF9800) // tetap sama agar border tidak hilang
     val badgeAreaBg = Color(0xFFFFB300)
     val badgeCircleBg = Color(0xFFFE8235)
 
     Surface(
         onClick = onClick,
-        modifier = Modifier.height(30.dp),
+        modifier = modifier
+            .height(32.dp),            // tinggi tetap
         shape = RoundedCornerShape(50),
         color = if (selected) selectedBg else unselectedBg,
-        border = BorderStroke(
-            1.dp,
-            if (selected) selectedBorderColor else borderColor
-        ),
+        border = BorderStroke(1.dp, borderColor),
         shadowElevation = 2.dp
     ) {
         Row(
-            modifier = Modifier.fillMaxHeight(),
+            modifier = Modifier.fillMaxSize(),  // ⬅️ PENTING untuk weight
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -51,18 +49,22 @@ fun FilterButton(
                 color = darkText,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(start = 22.dp, end = 10.dp)
+                maxLines = 1,
+                modifier = Modifier
+                    .weight(1f)                 // 🔥 teks fleksibel
+                    .padding(start = 12.dp)
             )
+
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .background(badgeAreaBg)
-                    .padding(horizontal = 8.dp),
+                    .padding(horizontal = 6.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
                     modifier = Modifier
-                        .size(22.dp)
+                        .size(20.dp)
                         .clip(RoundedCornerShape(50))
                         .background(badgeCircleBg),
                     contentAlignment = Alignment.Center

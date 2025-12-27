@@ -1,4 +1,4 @@
-package com.example.kasapp.ui.view.menu
+package com.example.kasapp.ui.view.kasir
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -27,7 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
-fun SuccessView(
+fun SuccessViewKasir(
     onNavigateBack: () -> Unit
 ) {
     val backgroundColor = Color(0xFFFFB300) // Warna kuning sesuai design
@@ -79,7 +79,7 @@ fun SuccessView(
 
             // Text "Transaksi Berhasil !"
             Text(
-                text = "WOW Ada Menu Baru !",
+                text = "Transaksi Berhasil !",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White

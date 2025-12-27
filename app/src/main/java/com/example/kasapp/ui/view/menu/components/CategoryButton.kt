@@ -2,12 +2,7 @@ package com.example.kasapp.ui.view.menu.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -23,49 +18,59 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun CategoryButton(
+    modifier: Modifier = Modifier, // ✅ PENTING
     text: String,
     iconRes: Int,
     selected: Boolean,
     onClick: () -> Unit
 ) {
     val iconBgColor = Color(0xFFFFB300)
-    val darkTextColor = Color(0xFF4A2800)
+    val textColor = Color(0xFF4A2800)
     val borderColor = Color(0xFFFF9800)
     val textBgColor = if (selected) Color(0xFFFFE0B2) else Color.White
 
     Surface(
         onClick = onClick,
+        modifier = modifier.height(48.dp), // tinggi tetap, lebar dari luar
         shape = RoundedCornerShape(50),
         border = BorderStroke(1.dp, borderColor),
-        modifier = Modifier.height(48.dp)
+        shadowElevation = 2.dp
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxSize(), // 🔥 wajib agar weight bekerja
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            // ICON
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .background(iconBgColor)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     painter = painterResource(id = iconRes),
                     contentDescription = text,
-                    tint = darkTextColor,
-                    modifier = Modifier.size(28.dp)
+                    tint = textColor,
+                    modifier = Modifier.size(26.dp)
                 )
             }
+
+            // TEXT
             Box(
                 modifier = Modifier
+                    .weight(1f) // 🔥 bikin teks fleksibel
                     .fillMaxHeight()
-                    .background(textBgColor)
-                    .padding(horizontal = 20.dp),
+                    .background(textBgColor),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = text,
-                    color = darkTextColor,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    color = textColor,
+                    maxLines = 1
                 )
             }
         }

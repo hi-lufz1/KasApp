@@ -412,10 +412,9 @@ private fun KasirTopBar(onBackClick: () -> Unit) {
         title = {
             Text(
                 text = "Kasir",
-                fontSize = 22.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                modifier = Modifier.padding(start = 8.dp)
+                color = Color.Black
             )
         },
         navigationIcon = {
@@ -423,16 +422,16 @@ private fun KasirTopBar(onBackClick: () -> Unit) {
                 painter = painterResource(id = R.drawable.back),
                 contentDescription = "Back",
                 modifier = Modifier
-                    .size(55.dp)
+                    .padding(start = 5.dp)
+                    .size(45.dp)
                     .padding(4.dp)
                     .clickable { onBackClick() },
                 contentScale = ContentScale.Fit
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.White
-        ),
-        windowInsets = WindowInsets(0.dp)
+            containerColor = Color(0xFFFFFFFF)
+        )
     )
 }
 

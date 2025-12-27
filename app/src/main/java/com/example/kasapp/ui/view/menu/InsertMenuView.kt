@@ -8,10 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,15 +25,16 @@ import com.example.kasapp.ui.view.menu.components.CategoryButton
 import com.example.kasapp.ui.view.menu.components.CustomTextField
 import com.example.kasapp.ui.viewmodel.Menu.InsertMenuViewModel
 import com.example.kasapp.ui.viewmodel.ViewModelFactory
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsertMenuView(
     viewModel: InsertMenuViewModel = viewModel(factory = ViewModelFactory.Factory),
     onBackClick: () -> Unit,
-    onSaveClick: () -> Unit // Event ini akan diarahkan ke SuccessScreen oleh PengelolaHalaman
+    onSaveClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
@@ -44,41 +42,67 @@ fun InsertMenuView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFEBC2F)) // Latar oranye tua
+            .background(Color(0xFFFFB300))
     ) {
-        InsertTopBar(onBackClick = onBackClick)
 
+        // ================= TOP APP BAR =================
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Tambah Menu",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+            },
+            navigationIcon = {
+                Image(
+                    painter = painterResource(id = R.drawable.back),
+                    contentDescription = "Back",
+                    modifier = Modifier
+                        .padding(start = 5.dp)
+                        .size(45.dp)
+                        .padding(4.dp)
+                        .clickable { onBackClick() },
+                    contentScale = ContentScale.Fit
+                )
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color(0xFFFFB300)
+            )
+        )
+
+        // ================= CONTENT =================
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
-                .background(Color(0xFFFFF9EF)) // Background cream
+                .background(Color(0xFFFFF9EF))
         ) {
+
+            // ================= FORM =================
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 24.dp)
             ) {
+
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // --- Nama Menu ---
-                Text(
-                    text = "Nama Menu",
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Gray
-                )
+                // ===== NAMA MENU =====
+                Text("Nama Menu", fontWeight = FontWeight.Bold, color = Color.Gray)
                 Spacer(modifier = Modifier.height(8.dp))
                 CustomTextField(
                     value = uiState.namaMenu,
-                    onValueChange = { viewModel.onNamaChange(it) },
+                    onValueChange = viewModel::onNamaChange,
                     placeholder = "Masukkan Nama Menu",
-                    leadingIconRes = R.drawable.cutlery, // GANTI dengan ikon Anda
+                    leadingIconRes = R.drawable.cutlery,
                     isError = uiState.namaMenuError != null
                 )
-                uiState.namaMenuError?.let { error ->
+                uiState.namaMenuError?.let {
                     Text(
-                        text = error,
+                        text = it,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 16.dp, top = 4.dp)
@@ -87,24 +111,20 @@ fun InsertMenuView(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // --- Harga Menu ---
-                Text(
-                    text = "Harga Menu",
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Gray
-                )
+                // ===== HARGA MENU =====
+                Text("Harga Menu", fontWeight = FontWeight.Bold, color = Color.Gray)
                 Spacer(modifier = Modifier.height(8.dp))
                 CustomTextField(
                     value = uiState.hargaMenu,
-                    onValueChange = { viewModel.onHargaChange(it) },
-                    placeholder = "Masukkan Harga Menu", // Placeholder ditambahkan
+                    onValueChange = viewModel::onHargaChange,
+                    placeholder = "Masukkan Harga Menu",
                     leadingIconText = "Rp",
                     keyboardType = KeyboardType.Number,
                     isError = uiState.hargaMenuError != null
                 )
-                uiState.hargaMenuError?.let { error ->
+                uiState.hargaMenuError?.let {
                     Text(
-                        text = error,
+                        text = it,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 16.dp, top = 4.dp)
@@ -113,58 +133,53 @@ fun InsertMenuView(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // --- Kategori ---
-                Text(
-                    text = "Kategori",
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Gray
-                )
+                // ===== KATEGORI =====
+                Text("Kategori", fontWeight = FontWeight.Bold, color = Color.Gray)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
-                    modifier = Modifier.fillMaxWidth(), // Agar ke tengah
-                    horizontalArrangement = Arrangement.Center // Agar ke tengah
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        CategoryButton(
-                            text = "Minuman",
-                            iconRes = R.drawable.minuman, // GANTI dengan ikon Anda
-                            selected = uiState.jenisMenu == "Minuman",
-                            onClick = { viewModel.onJenisChange("Minuman") }
-                        )
-                        CategoryButton(
-                            text = "Makanan",
-                            iconRes = R.drawable.makanann, // GANTI dengan ikon Anda
-                            selected = uiState.jenisMenu == "Makanan",
-                            onClick = { viewModel.onJenisChange("Makanan") }
-                        )
-                    }
+                    CategoryButton(
+                        modifier = Modifier.weight(1f),
+                        text = "Minuman",
+                        iconRes = R.drawable.minuman,
+                        selected = uiState.jenisMenu == "Minuman",
+                        onClick = { viewModel.onJenisChange("Minuman") }
+                    )
+                    CategoryButton(
+                        modifier = Modifier.weight(1f),
+                        text = "Makanan",
+                        iconRes = R.drawable.makanann,
+                        selected = uiState.jenisMenu == "Makanan",
+                        onClick = { viewModel.onJenisChange("Makanan") }
+                    )
                 }
-                uiState.jenisMenuError?.let { error ->
+                uiState.jenisMenuError?.let {
                     Text(
-                        text = error,
+                        text = it,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 16.dp, top = 4.dp)
                     )
                 }
+            }
 
-            } // Akhir Kolom Scrollable
-
-            // --- Tombol Simpan ---
+            // ================= SAVE BUTTON =================
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .navigationBarsPadding()
                     .padding(vertical = 24.dp),
                 contentAlignment = Alignment.Center
             ) {
                 SaveButton(
-                    enabled = true, // Selalu oranye
                     onClick = {
                         scope.launch {
                             val success = viewModel.saveMenu()
                             if (success) {
                                 withContext(Dispatchers.Main) {
-                                    onSaveClick() // Panggil navigasi ke success
+                                    onSaveClick()
                                 }
                             }
                         }
@@ -175,53 +190,21 @@ fun InsertMenuView(
     }
 }
 
-// --- HELPER COMPOSABLE (TopBar, TextField, CategoryButton, SaveButton) ---
-
-@Composable
-fun InsertTopBar(onBackClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.back), // GANTI dengan ikon back Anda
-            contentDescription = "Back",
-            modifier = Modifier
-                .size(55.dp)
-                .padding(4.dp)
-                .clickable { onBackClick() },
-            contentScale = ContentScale.Fit
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = "Tambah Menu",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF3A1D00)
-        )
-    }
-}
-
-
-
 @Composable
 fun SaveButton(
-    enabled: Boolean, // Tidak dipakai untuk warna
     onClick: () -> Unit
 ) {
-    val mainColor = Color(0xFFFFB300) // Oranye Tua
-    val iconBgColor = Color(0xFFFFE0B2) // Oranye Muda (Cream)
-    val textColor = Color.Black // Selalu Hitam
+    val mainColor = Color(0xFFFFB300)
+    val iconBgColor = Color(0xFFFFE0B2)
+    val textColor = Color.Black
 
     Surface(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth(0.85f)
             .height(48.dp),
-        shape = RoundedCornerShape(20), // Bentuk Pill
-        color = mainColor, // Warna utama
+        shape = RoundedCornerShape(20.dp),
+        color = mainColor,
         shadowElevation = 4.dp
     ) {
         Row(
@@ -229,9 +212,7 @@ fun SaveButton(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+                modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -245,19 +226,17 @@ fun SaveButton(
                 modifier = Modifier
                     .width(48.dp)
                     .fillMaxHeight()
-                    .clip(RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp, topStart = 10.dp, bottomStart = 10.dp)) // Clip Pill
-                    .background(iconBgColor), // Latar ikon
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(iconBgColor),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "+",
-                    fontSize = 30.sp,
-
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
                     color = textColor
                 )
             }
         }
     }
 }
-
-

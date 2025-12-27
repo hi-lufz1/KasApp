@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -46,44 +47,54 @@ fun HomeProfileView(
         Font(R.font.sorts_mill_goudy, FontWeight.Normal)
     )
 
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Pengaturan",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                },
-                navigationIcon = {
-                    Image(
-                        painter = painterResource(id = R.drawable.back),
-                        contentDescription = "Back",
-                        modifier = Modifier
-                            .size(55.dp)
-                            .padding(start = 8.dp, top = 4.dp, bottom = 4.dp, end = 4.dp)
-                            .clickable { onBackClick() },
-                        contentScale = ContentScale.Fit
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFFFB300)
-                ),
-                windowInsets = WindowInsets(0.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFFFB300),
+                        Color(0xFFFFB300),
+                        Color(0xFFFFF9EF)
+                    ),
+                    startY = 0f,
+                    endY = Float.POSITIVE_INFINITY
+                )
             )
-        },
-        containerColor = Color(0xFFFFB300)
-    ) { paddingValues ->
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .statusBarsPadding()
+                .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Top Bar Manual
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(horizontal = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.back),
+                    contentDescription = "Back",
+                    modifier = Modifier
+                        .padding(start = 5.dp)
+                        .size(45.dp)
+                        .padding(4.dp)
+                        .clickable { onBackClick() },
+                    contentScale = ContentScale.Fit
+                )
+                Text(
+                    text = "Pengaturan",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
 
             // Avatar Profile
             Image(

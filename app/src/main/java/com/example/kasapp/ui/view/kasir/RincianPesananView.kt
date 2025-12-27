@@ -76,7 +76,7 @@ fun RincianPesananView(
                 title = {
                     Text(
                         text = "Rincian Pesanan",
-                        fontSize = 22.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
                     )
@@ -86,16 +86,20 @@ fun RincianPesananView(
                         painter = painterResource(id = R.drawable.back),
                         contentDescription = "Back",
                         modifier = Modifier
-                            .size(55.dp)
+                            .padding(start = 5.dp)
+                            .size(45.dp)
                             .padding(4.dp)
                             .clickable { onBackClick() },
                         contentScale = ContentScale.Fit
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
-                windowInsets = WindowInsets(0.dp)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFFFFFFF)
+                )
             )
-        }
+        },
+        containerColor = Color(0xFFFFB300)
+
     ) { paddingValues ->
         Box(
             modifier = Modifier

@@ -1,14 +1,5 @@
 package com.example.kasapp.ui.view.menu
 
-// Import dari HomeMenuView lama
-import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.kasapp.ui.viewmodel.Menu.HomeMenuViewModel
-import com.example.kasapp.ui.viewmodel.ViewModelFactory
-
-// Import dari KelolaMenuScreen
-import com.example.kasapp.ui.view.menu.components.FilterButton
-import com.example.kasapp.ui.view.menu.components.TopBarKelolaMenu
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -27,73 +18,82 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kasapp.data.entity.MenuMakanan
+import com.example.kasapp.ui.view.menu.components.FilterButton
+import com.example.kasapp.ui.view.menu.components.KelolaMenuTopBar
 import com.example.kasapp.ui.view.menu.components.MenuItemCard
+import com.example.kasapp.ui.viewmodel.Menu.HomeMenuViewModel
+import com.example.kasapp.ui.viewmodel.ViewModelFactory
 
 @Composable
 fun HomeMenuView(
-    // Parameter ini diterima dari PengelolaHalaman (NavHost)
     onTambahMenuClick: () -> Unit,
     onBackClick: () -> Unit,
     onEditMenuClick: (Int) -> Unit
 ) {
-    // 1. Panggil ViewModel (dari HomeMenuView lama)
-    val viewModel: HomeMenuViewModel = viewModel(factory = ViewModelFactory.Factory)
+    val viewModel: HomeMenuViewModel =
+        viewModel(factory = ViewModelFactory.Factory)
 
-    // 2. Ambil data UI (dari KelolaMenuScreen lama)
     val uiState by viewModel.uiState.collectAsState()
-    val filteredMenus: List<MenuMakanan> = uiState.listMenu
-    val selectedFilter: String = uiState.selectedFilter
+    val filteredMenus = uiState.listMenu
+    val selectedFilter = uiState.selectedFilter
 
-    // State untuk Dialog Konfirmasi Hapus
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     var menuToDelete by remember { mutableStateOf<MenuMakanan?>(null) }
 
-
-    // 3. Tampilkan UI (dari KelolaMenuScreen lama)
+    // ================= ROOT =================
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFB300)) // Warna latar root (oranye)
+            .background(Color(0xFFFFB300)) // ORANYE
     ) {
-        // 🔶 Top bar
-        TopBarKelolaMenu(
+
+        // ================= TOP BAR (SAFE AREA ATAS) =================
+        KelolaMenuTopBar(
+            title = "Kelola Menu",
             searchText = uiState.searchQuery,
-            onSearchChange = { viewModel.onSearchChange(it) },
+            onSearchChange = viewModel::onSearchChange,
             onBackClick = onBackClick
         )
 
-        // 2. Column Konten (Area dengan "Lekukan")
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // ================= CONTENT (CREAM) =================
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
-                .background(Color(0xFFFFF9EF)) // Background cream
+                .background(Color(0xFFFFF9EF))
         ) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔘 Tombol filter kategori
+            // ================= FILTER =================
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                FilterButton (
+                FilterButton(
+                    modifier = Modifier.weight(1f),
                     text = "Semua",
                     count = uiState.countSemua,
                     selected = selectedFilter == "Semua",
                     onClick = { viewModel.onFilterChange("Semua") }
                 )
+
                 FilterButton(
+                    modifier = Modifier.weight(1f),
                     text = "Makanan",
                     count = uiState.countMakanan,
                     selected = selectedFilter == "Makanan",
                     onClick = { viewModel.onFilterChange("Makanan") }
                 )
+
                 FilterButton(
+                    modifier = Modifier.weight(1f),
                     text = "Minuman",
                     count = uiState.countMinuman,
                     selected = selectedFilter == "Minuman",
@@ -103,7 +103,7 @@ fun HomeMenuView(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 🍜 Daftar menu (scrollable) atau Tampilan Kosong/Loading
+            // ================= LIST MENU =================
             Box(modifier = Modifier.weight(1f)) {
                 when {
                     uiState.isLoading -> {
@@ -114,6 +114,7 @@ fun HomeMenuView(
                             CircularProgressIndicator()
                         }
                     }
+
                     filteredMenus.isEmpty() -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -128,6 +129,7 @@ fun HomeMenuView(
                             )
                         }
                     }
+
                     else -> {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
@@ -137,8 +139,8 @@ fun HomeMenuView(
                                 MenuItemCard(
                                     menu = menu,
                                     onEditClick = { onEditMenuClick(menu.idMenu) },
-                                    onDeleteClick = { selectedMenu ->
-                                        menuToDelete = selectedMenu
+                                    onDeleteClick = {
+                                        menuToDelete = it
                                         showDeleteDialog = true
                                     }
                                 )
@@ -146,17 +148,18 @@ fun HomeMenuView(
                         }
                     }
                 }
-            } // Akhir Box Daftar Menu
+            }
 
-            // ➕ Tombol tambah menu di bawah
+            // ================= TOMBOL TAMBAH (SAFE AREA BAWAH) =================
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 20.dp, bottom = 35.dp),
+                    .navigationBarsPadding() // ✅ SAFE AREA BAWAH
+                    .padding(top = 20.dp, bottom = 20.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Surface(
-                    onClick = onTambahMenuClick, // Panggil event navigasi
+                    onClick = onTambahMenuClick,
                     modifier = Modifier
                         .width(180.dp)
                         .height(40.dp),
@@ -168,20 +171,15 @@ fun HomeMenuView(
                         modifier = Modifier.fillMaxSize(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
+                        Text(
+                            text = "Tambah Menu",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black,
                             modifier = Modifier
                                 .weight(1f)
-                                .fillMaxHeight(),
-                            contentAlignment = Alignment.CenterStart
-                        ) {
-                            Text(
-                                text = "Tambah Menu",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black,
-                                modifier = Modifier.padding(start = 24.dp)
-                            )
-                        }
+                                .padding(start = 24.dp)
+                        )
                         Box(
                             modifier = Modifier
                                 .width(42.dp)
@@ -193,17 +191,16 @@ fun HomeMenuView(
                             Text(
                                 text = "+",
                                 fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
                 }
             }
-        } // --- Akhir Column Konten
-    } // --- Akhir Column Root
+        }
+    }
 
-    // Tampilkan Dialog Konfirmasi Hapus jika state true
+    // ================= DELETE DIALOG =================
     if (showDeleteDialog && menuToDelete != null) {
         DeleteConfirmationDialog(
             menuName = menuToDelete!!.namaMenu,
@@ -228,11 +225,23 @@ fun DeleteConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Konfirmasi Hapus") },
-        text = { Text("Apakah Anda yakin ingin menghapus menu \"$menuName\"?") },
+        title = {
+            Text(
+                text = "Konfirmasi Hapus",
+                fontWeight = FontWeight.SemiBold
+            )
+        },
+        text = {
+            Text(
+                text = "Apakah Anda yakin ingin menghapus menu \"$menuName\"?"
+            )
+        },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Ya", color = MaterialTheme.colorScheme.error)
+                Text(
+                    text = "Ya",
+                    color = MaterialTheme.colorScheme.error
+                )
             }
         },
         dismissButton = {
