@@ -38,9 +38,8 @@ data class KasirUiState(
     val isLoading: Boolean = true,
     val selectedPayment: String = "QRIS", // "QRIS", "Tunai"
     val lastTransactionTimestamp: Long? = null,
-    val isHistoryLoading: Boolean = false // <-- State loading untuk nota riwayat
+    val isHistoryLoading: Boolean = false
 ) {
-    // Properti turunan untuk menghitung total
     val totalCartPrice: Int
         get() = cart.sumOf { it.subtotal }
 
@@ -53,20 +52,18 @@ data class KasirUiState(
  */
 class KasirViewModel(
     private val repositoryMenuMakanan: RepositoryMenuMakanan,
-    private val repositoryTransaksi: RepositoryTransaksi
+    private val repositoryTransaksi: RepositoryTransaksi,
+    private var currentTransactionId: Int? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(KasirUiState())
     val uiState: StateFlow<KasirUiState> = _uiState.asStateFlow()
 
-    // State internal untuk menyimpan daftar menu asli dari database
     private val _originalMenuList = MutableStateFlow<List<MenuMakanan>>(emptyList())
-    // State internal untuk keranjang belanja
     private val _cart = MutableStateFlow<List<CartItem>>(emptyList())
     private val _filter = MutableStateFlow("Semua")
 
     init {
-        // Gabungkan semua flow internal (menu, keranjang, filter) menjadi satu UiState
         viewModelScope.launch {
             combine(
                 _originalMenuList,
@@ -79,52 +76,41 @@ class KasirViewModel(
                     menuList.filter { it.jenisMenu == filter }
                 }
 
-                // Buat UiState baru
                 KasirUiState(
                     listMenu = filteredList,
                     cart = cart,
                     selectedFilter = filter,
-                    isLoading = _uiState.value.isLoading, // Ambil state loading saat ini
+                    isLoading = _uiState.value.isLoading,
                     selectedPayment = _uiState.value.selectedPayment,
                     lastTransactionTimestamp = _uiState.value.lastTransactionTimestamp,
-                    isHistoryLoading = _uiState.value.isHistoryLoading // Ambil state history loading
+                    isHistoryLoading = _uiState.value.isHistoryLoading
                 )
             }.catch {
                 _uiState.update { it.copy(isLoading = false, isHistoryLoading = false) }
             }.collect { state ->
-                // Update UiState utama
                 _uiState.value = state
             }
         }
     }
 
-    /**
-     * Memuat semua menu dari RepositoryMenuMakanan.
-     */
     private fun loadAllMenu() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) } // Mulai loading
+            _uiState.update { it.copy(isLoading = true) }
             repositoryMenuMakanan.getAllMenu()
                 .catch {
                     _uiState.update { it.copy(isLoading = false) }
                 }
                 .collect { menuList ->
-                    _originalMenuList.value = menuList // Simpan daftar asli
-                    _uiState.update { it.copy(isLoading = false) } // Selesai loading
+                    _originalMenuList.value = menuList
+                    _uiState.update { it.copy(isLoading = false) }
                 }
         }
     }
 
-    /**
-     * Mengubah filter kategori menu (Semua, Makanan, Minuman).
-     */
     fun changeFilter(filter: String) {
         _filter.value = filter
     }
 
-    /**
-     * Menambahkan menu ke keranjang.
-     */
     fun addItemToCart(menu: MenuMakanan) {
         _cart.update { currentCart ->
             val existingItem = currentCart.find { it.menu.idMenu == menu.idMenu }
@@ -142,9 +128,6 @@ class KasirViewModel(
         }
     }
 
-    /**
-     * Mengurangi jumlah item di keranjang.
-     */
     fun decreaseItemInCart(item: CartItem) {
         _cart.update { currentCart ->
             if (item.quantity > 1) {
@@ -161,25 +144,16 @@ class KasirViewModel(
         }
     }
 
-    /**
-     * Menghapus item dari keranjang (di halaman Rincian Pesanan).
-     */
     fun removeItemFromCart(item: CartItem) {
         _cart.update { currentCart ->
             currentCart.filterNot { it.menu.idMenu == item.menu.idMenu }
         }
     }
 
-    /**
-     * Mengatur metode pembayaran yang dipilih.
-     */
     fun selectPaymentMethod(method: String) {
         _uiState.update { it.copy(selectedPayment = method) }
     }
 
-    /**
-     * Menyelesaikan transaksi dan menyimpannya ke database.
-     */
     fun saveTransaction(onSuccess: () -> Unit) {
         viewModelScope.launch {
             val currentState = _uiState.value
@@ -187,14 +161,12 @@ class KasirViewModel(
 
             val timestamp = System.currentTimeMillis()
 
-            // 1. Buat objek Transaksi (Header)
             val transaksi = Transaksi(
                 jlhTransaksi = currentState.totalCartPrice,
                 jenisPembayaran = currentState.selectedPayment,
                 tglTransaksi = timestamp
             )
 
-            // 2. Buat List<DetailTransaksi> (Item)
             val detailItems = currentState.cart.map { cartItem ->
                 DetailTransaksi(
                     idDetail = 0,
@@ -206,41 +178,28 @@ class KasirViewModel(
                 )
             }
 
-            // 3. Simpan ke repository
             repositoryTransaksi.simpanTransaksi(transaksi, detailItems)
             _uiState.update { it.copy(lastTransactionTimestamp = timestamp) }
-            // clearCart() DIHAPUS DARI SINI
-
-            // 4. Panggil callback sukses
             onSuccess()
         }
     }
 
-    /**
-     * Mengosongkan keranjang belanja.
-     * Fungsi ini dipanggil dari onScreenResumed()
-     */
     fun clearCart() {
         _cart.value = emptyList()
         _filter.value = "Semua"
         _uiState.update { it.copy(lastTransactionTimestamp = null) }
     }
 
-    /**
-     * Mengambil data transaksi lama dan memuatnya ke keranjang
-     * agar bisa ditampilkan di NotaPesananView.
-     */
     fun loadCartFromHistory(idTransaksi: Int) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isHistoryLoading = true) } // Mulai Loading
+            currentTransactionId = idTransaksi
+            _uiState.update { it.copy(isHistoryLoading = true) }
 
             val trxWithDetails = repositoryTransaksi.getTransaksiWithDetail(idTransaksi)
                 .filterNotNull()
                 .first()
 
-            // Konversi DetailTransaksi kembali ke CartItem
             val cartItems = trxWithDetails.detailTransaksi.map { detail ->
-
                 val menu = detail.idMenu?.let { id ->
                     repositoryMenuMakanan.getMenuById(id).first()
                 }
@@ -248,43 +207,54 @@ class KasirViewModel(
                 CartItem(
                     menu = MenuMakanan(
                         idMenu = detail.idMenu ?: 0,
-                        namaMenu = detail.namaMenuSaatTransaksi, // pakai snapshot
-                        hargaMenu = detail.hargaSaatTransaksi,   // pakai snapshot
+                        namaMenu = detail.namaMenuSaatTransaksi,
+                        hargaMenu = detail.hargaSaatTransaksi,
                         jenisMenu = menu?.jenisMenu ?: "Tidak diketahui"
                     ),
                     quantity = detail.jumlah
                 )
             }
 
-            _cart.value = cartItems // Muat keranjang lama
+            _cart.value = cartItems
             _uiState.update {
                 it.copy(
                     selectedPayment = trxWithDetails.transaksi.jenisPembayaran,
                     lastTransactionTimestamp = trxWithDetails.transaksi.tglTransaksi,
-                    isHistoryLoading = false // Selesai Loading
+                    isHistoryLoading = false
                 )
             }
         }
     }
 
-    /**
-     * Dipanggil saat HomeKasirView atau RiwayatView muncul (resume).
-     * Ini membersihkan keranjang jika kita baru saja menyelesaikan transaksi.
-     */
     fun onScreenResumed() {
-
         loadAllMenu()
-        // Jika lastTransactionTimestamp ada DAN keranjang tidak kosong,
-        // berarti kita baru selesai transaksi (dari NotaPesananView)
+        // Reset cart jika kita baru kembali dari save transaksi
         if (_uiState.value.lastTransactionTimestamp != null && _cart.value.isNotEmpty()) {
             clearCart()
         }
-
-        // Jika kita memuat riwayat, isHistoryLoading true.
-        // Saat kita kembali, kita harus setel false agar tidak loading terus.
         if (_uiState.value.isHistoryLoading) {
             _uiState.update { it.copy(isHistoryLoading = false) }
         }
     }
 
+    /**
+     * Menghapus transaksi yang sedang dilihat.
+     * PENTING: Jangan panggil clearCart() di sini untuk menghindari glitch UI menjadi 0.
+     */
+    suspend fun deleteCurrentTransaction() {
+        currentTransactionId?.let { id ->
+            val transaksiToDelete = Transaksi(
+                idTransaksi = id,
+                jlhTransaksi = 0,
+                jenisPembayaran = "",
+                tglTransaksi = 0L
+            )
+
+            // Hapus dari database (Database bersih)
+            repositoryTransaksi.deleteTransaksi(transaksiToDelete)
+
+            // Reset ID saja, jangan reset cart agar UI tidak berubah kosong
+            currentTransactionId = null
+        }
+    }
 }

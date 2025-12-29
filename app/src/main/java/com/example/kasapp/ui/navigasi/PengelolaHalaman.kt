@@ -255,7 +255,10 @@ fun PengelolaHalaman(
         composable(route = DetailRiwayat.route) {
             DetailRiwayatView(
                 viewModel = kasirViewModel,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onDeleteSuccess = {
+                    navController.popBackStack()
+                }
             )
         }
 

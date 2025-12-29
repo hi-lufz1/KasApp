@@ -161,7 +161,7 @@ fun BackupScreen(
                     Spacer(Modifier.height(80.dp))
 
                     Icon(
-                        painter = painterResource(id = R.drawable.cloudupload),
+                        painter = painterResource(id = R.drawable.cloud),
                         contentDescription = null,
                         modifier = Modifier.size(180.dp),
                         tint = Color(0xFF6B6B6B)
@@ -267,7 +267,7 @@ private fun BackupMenuButton(
         Icon(
             painter = painterResource(id = iconRes),
             contentDescription = null,
-            tint = Color.Black,
+            tint = Color.Unspecified,
             modifier = Modifier.size(32.dp)
         )
         Spacer(Modifier.width(15.dp))
