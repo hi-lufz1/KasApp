@@ -523,7 +523,7 @@ private fun KasirMenuItem(
                         containerColor = Color(0xFFFFB300)
                     )
                 ) {
-                    Text("Pilih", color = Color.Black, fontWeight = FontWeight.Bold)
+                    Text("Pilih", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             } else {
                 QuantityControl(

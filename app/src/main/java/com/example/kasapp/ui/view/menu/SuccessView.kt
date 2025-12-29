@@ -79,7 +79,7 @@ fun SuccessView(
 
             // Text "Transaksi Berhasil !"
             Text(
-                text = "WOW Ada Menu Baru !",
+                text = "Sukses!",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
