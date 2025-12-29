@@ -100,29 +100,45 @@ fun TentangKamiView(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Text dengan warna berbeda untuk Warmindo, Raja, Vitamin
                 Text(
                     text = buildAnnotatedString {
                         withStyle(style = SpanStyle(color = TextColorBrown)) {
                             append("Aplikasi ini dikembangkan melalui kerja sama dengan ")
                         }
-                        withStyle(style = SpanStyle(color = Color(0xFFDC143C))) { // Merah
+
+                        withStyle(
+                            style = SpanStyle(
+                                color = Color(0xFF744A00), // Merah
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
                             append("Warmindo")
                         }
-                        withStyle(style = SpanStyle(color = TextColorBrown)) {
-                            append(" ")
-                        }
-                        withStyle(style = SpanStyle(color = Color(0xFFFFD700))) { // Kuning/Gold
+
+                        append(" ")
+
+                        withStyle(
+                            style = SpanStyle(
+                                color = Color(0xFF744A00), // Kuning/Gold
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
                             append("Raja")
                         }
-                        withStyle(style = SpanStyle(color = TextColorBrown)) {
-                            append(" ")
+
+                        append(" ")
+
+                        withStyle(
+                            style = SpanStyle(
+                                color = Color(0xFF744A00), // Hijau
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
+                            append("Vitamin 3")
                         }
-                        withStyle(style = SpanStyle(color = Color(0xFF32CD32))) { // Hijau
-                            append("Vitamin")
-                        }
+
                         withStyle(style = SpanStyle(color = TextColorBrown)) {
-                            append(" 3, berawal dari kebutuhan nyata pemilik usaha dalam mengelola transaksi tunai dan QRIS yang selama ini masih terpisah dan harus dihitung manual.")
+                            append(", berawal dari kebutuhan nyata pemilik usaha dalam mengelola transaksi tunai dan QRIS yang selama ini masih terpisah dan harus dihitung manual.")
                         }
                     },
                     fontFamily = adaminaFamily,
@@ -130,6 +146,7 @@ fun TentangKamiView(
                     lineHeight = 24.sp,
                     textAlign = TextAlign.Justify
                 )
+
 
                 Spacer(modifier = Modifier.height(14.dp))
 
