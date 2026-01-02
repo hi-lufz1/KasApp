@@ -151,7 +151,7 @@ fun TentangKamiView(
                 Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    text = "Melalui Kass App, pencatatan keuangan menjadi lebih sederhana dan terintegrasi — mulai dari transaksi harian, mingguan, bulanan, hingga riwayat dan pencadangan data. Tujuannya satu: membantu pemilik usaha memantau keuangan dengan mudah, cepat, dan rapi hanya melalui satu aplikasi.",
+                    text = "Melalui Kass App, pencatatan keuangan menjadi lebih sederhana dan terintegrasi — mulai dari transaksi harian, bulanan, tahunan hingga riwayat dan pencadangan data. Tujuannya satu: membantu pemilik usaha memantau keuangan dengan mudah, cepat, dan rapi hanya melalui satu aplikasi.",
                     fontFamily = adaminaFamily,
                     fontSize = 16.sp,
                     color = TextColorBrown,
