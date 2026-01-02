@@ -293,6 +293,7 @@ fun NotaPesananView(
                                 }
                             }
                         }
+                        Spacer(modifier = Modifier.height(24.dp))
 
                         // Tombol Selesai
                         Button(
