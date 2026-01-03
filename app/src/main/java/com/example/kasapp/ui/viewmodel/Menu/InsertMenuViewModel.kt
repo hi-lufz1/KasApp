@@ -23,7 +23,7 @@ data class InsertMenuUiState(
 
 class InsertMenuViewModel(
     private val repository: RepositoryMenuMakanan,
-    private val backupViewModel: BackupViewModel
+    private val onLocalDataChanged: () -> Unit
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(InsertMenuUiState())
@@ -84,7 +84,7 @@ class InsertMenuViewModel(
         )
         // Simpan ke repository
         repository.insertMenu(menu)
-        backupViewModel.notifyLocalDataChanged()
+        onLocalDataChanged()
         return true // Berhasil
     }
 }

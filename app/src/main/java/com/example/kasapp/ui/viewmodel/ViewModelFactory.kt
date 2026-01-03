@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.kasapp.KasApp
+import com.example.kasapp.data.drive.BackupDebounceHolder
 import com.example.kasapp.ui.viewmodel.Kasir.KasirViewModel
 import com.example.kasapp.ui.viewmodel.Menu.HomeMenuViewModel
 import com.example.kasapp.ui.viewmodel.Menu.InsertMenuViewModel
@@ -43,7 +44,12 @@ object ViewModelFactory {
         // Initializer untuk InsertMenuViewModel
         initializer {
             InsertMenuViewModel(
-                kasApp().containerApp.repositoryMenuMakanan
+                kasApp().containerApp.repositoryMenuMakanan,
+                onLocalDataChanged = {
+                    BackupDebounceHolder.notifyChange(
+                        kasApp().containerApp.backupRepository
+                    )
+                }
             )
         }
 
@@ -51,7 +57,12 @@ object ViewModelFactory {
         initializer {
             UpdateMenuViewModel(
                 this.createSavedStateHandle(), // Untuk mengambil ID dari Navigasi
-                kasApp().containerApp.repositoryMenuMakanan
+                kasApp().containerApp.repositoryMenuMakanan,
+                onLocalDataChanged = {
+                    BackupDebounceHolder.notifyChange(
+                        kasApp().containerApp.backupRepository
+                    )
+                }
             )
         }
 
@@ -60,7 +71,12 @@ object ViewModelFactory {
             KasirViewModel(
                 // KasirViewModel butuh DUA repository
                 kasApp().containerApp.repositoryMenuMakanan,
-                kasApp().containerApp.repositoryTransaksi
+                kasApp().containerApp.repositoryTransaksi,
+                onLocalDataChanged = {
+                    BackupDebounceHolder.notifyChange(
+                        kasApp().containerApp.backupRepository
+                    )
+                }
             )
         }
 

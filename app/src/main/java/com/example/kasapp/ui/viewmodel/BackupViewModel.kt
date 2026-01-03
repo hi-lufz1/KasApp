@@ -13,26 +13,6 @@ class BackupViewModel(
     private val backupRepository: BackupRepository
 ) : AndroidViewModel(application) {
 
-    private var debounceJob: Job? = null
-
-    private val DEBOUNCE_DELAY = 60_000L
-    fun notifyLocalDataChanged() {
-        debounceJob?.cancel()
-
-        debounceJob = viewModelScope.launch {
-            delay(DEBOUNCE_DELAY)
-
-            try {
-                if (backupRepository.shouldBackup()) {
-                    backupRepository.backupDatabase()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-
     fun backupToDrive(onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
             try {

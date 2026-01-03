@@ -32,7 +32,7 @@ const val MENU_ID_ARG = "idMenu"
 class UpdateMenuViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: RepositoryMenuMakanan,
-    private val backupViewModel: BackupViewModel
+    private val onLocalDataChanged: () -> Unit
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UpdateMenuUiState())
@@ -123,7 +123,7 @@ class UpdateMenuViewModel(
         )
         // Update ke repository
         repository.updateMenu(menuToUpdate)
-        backupViewModel.notifyLocalDataChanged()
+        onLocalDataChanged()
         return true // Berhasil
     }
 }

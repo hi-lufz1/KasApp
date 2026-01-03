@@ -54,7 +54,7 @@ data class KasirUiState(
 class KasirViewModel(
     private val repositoryMenuMakanan: RepositoryMenuMakanan,
     private val repositoryTransaksi: RepositoryTransaksi,
-    private val backupViewModel: BackupViewModel,
+    private val onLocalDataChanged: () -> Unit,
     private var currentTransactionId: Int? = null
 ) : ViewModel() {
 
@@ -181,7 +181,7 @@ class KasirViewModel(
             }
 
             repositoryTransaksi.simpanTransaksi(transaksi, detailItems)
-            backupViewModel.notifyLocalDataChanged()
+            onLocalDataChanged()
             _uiState.update { it.copy(lastTransactionTimestamp = timestamp) }
             onSuccess()
         }
@@ -255,7 +255,7 @@ class KasirViewModel(
 
             // Hapus dari database (Database bersih)
             repositoryTransaksi.deleteTransaksi(transaksiToDelete)
-            backupViewModel.notifyLocalDataChanged()
+            onLocalDataChanged()
             // Reset ID saja, jangan reset cart agar UI tidak berubah kosong
             currentTransactionId = null
         }
