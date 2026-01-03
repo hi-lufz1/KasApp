@@ -37,6 +37,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 fun HomeProfileView(
     name: String?,
     email: String?,
+    isLoading: Boolean,
     onBackClick: () -> Unit,
     onTentangKamiClick: () -> Unit = {},
     onKeluarAkunClick: () -> Unit = {}
@@ -179,6 +180,27 @@ fun HomeProfileView(
                         isLogout = true
                     )
                 }
+            }
+        }
+    }
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White.copy(alpha = 0.85f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator(
+                    color = Color(0xFFFF6B00),
+                    strokeWidth = 4.dp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Keluar Akun...",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
             }
         }
     }

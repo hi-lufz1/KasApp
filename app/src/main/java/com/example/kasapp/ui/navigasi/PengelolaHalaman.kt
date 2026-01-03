@@ -3,6 +3,8 @@ package com.example.kasapp.ui.navigasi
 import android.app.Activity
 import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -45,6 +47,7 @@ fun PengelolaHalaman(
     loginViewModel: LoginViewModel
 ) {
 
+    val isLoading: Boolean by loginViewModel.isLoading.collectAsState(initial = false)
     val kasirViewModel: KasirViewModel = viewModel(factory = ViewModelFactory.Factory)
     val scope = rememberCoroutineScope()
 
@@ -281,6 +284,7 @@ fun PengelolaHalaman(
             HomeProfileView(
                 name = name,
                 email = email,
+                isLoading = isLoading,
                 onBackClick = { navController.popBackStack() },
                 onTentangKamiClick = {
                     navController.navigate(TentangKami.route)

@@ -2,6 +2,7 @@ package com.example.kasapp.data.drive
 
 import android.content.Context
 import android.util.Log
+import androidx.sqlite.db.SimpleSQLiteQuery
 import com.example.kasapp.data.db.KasAppDatabase
 import com.google.api.client.http.FileContent
 import com.google.api.services.drive.Drive
@@ -70,43 +71,121 @@ object BackupDatabaseHelper {
 
     suspend fun uploadDatabase(context: Context, drive: Drive) {
         withContext(Dispatchers.IO) {
-            // Tutup Room dulu agar semua data flush
-            KasAppDatabase.getDatabase(context).close()
+            try {
+                val dbPath = context.getDatabasePath("KasAppDatabase")
+                val walFile = File(dbPath.path + "-wal")
+                val shmFile = File(dbPath.path + "-shm")
 
-            val dbPath = context.getDatabasePath("KasAppDatabase")
-            val wal = File(dbPath.path + "-wal")
-            val shm = File(dbPath.path + "-shm")
+                Log.d("BackupDebug", "=== MULAI BACKUP ===")
 
-            // File sementara untuk backup
-            val tempBackup = File(context.cacheDir, BACKUP_FILENAME)
+                // LANGKAH 1: Checkpoint DULU saat DB masih terbuka
+                val db = KasAppDatabase.getDatabase(context)
+                val sqliteDb = db.openHelper.writableDatabase
 
-            // Copy main DB
-            dbPath.copyTo(tempBackup, overwrite = true)
+                Log.d("BackupDebug", "Checkpoint saat DB masih aktif...")
+                sqliteDb.query(SimpleSQLiteQuery("PRAGMA wal_checkpoint(FULL)")).use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        val busy = cursor.getInt(0)
+                        val log = cursor.getInt(1)
+                        val checkpointed = cursor.getInt(2)
+                        Log.d("BackupDebug", "Checkpoint aktif: busy=$busy, log=$log, checkpointed=$checkpointed")
+                    }
+                }
 
-            // Copy WAL & SHM jika ada
-            if (wal.exists()) wal.copyTo(File(context.cacheDir, wal.name), overwrite = true)
-            if (shm.exists()) shm.copyTo(File(context.cacheDir, shm.name), overwrite = true)
+                val walSizeBefore = if (walFile.exists()) walFile.length() else 0
+                Log.d("BackupDebug", "WAL size sebelum close: $walSizeBefore bytes")
 
-            val fileMetadata = DriveFile().apply {
-                name = BACKUP_FILENAME
-                mimeType = "application/octet-stream"
+                // LANGKAH 2: BARU tutup semua koneksi
+                KasAppDatabase.closeAll(context)
+                Thread.sleep(300)
+
+                val walSizeAfter = if (walFile.exists()) walFile.length() else 0
+                Log.d("BackupDebug", "WAL size setelah close: $walSizeAfter bytes")
+
+                // LANGKAH 3: Jika masih ada WAL, coba checkpoint final
+                if (walSizeAfter > 0) {
+                    Log.w("BackupDebug", "⚠️ WAL masih ada ($walSizeAfter bytes), force checkpoint...")
+
+                    try {
+                        // Buka TANPA WAL flag untuk checkpoint
+                        val sqliteDb = android.database.sqlite.SQLiteDatabase.openDatabase(
+                            dbPath.path,
+                            null,
+                            android.database.sqlite.SQLiteDatabase.OPEN_READWRITE
+                        )
+
+                        sqliteDb.rawQuery("PRAGMA wal_checkpoint(TRUNCATE)", null).use { cursor ->
+                            if (cursor.moveToFirst()) {
+                                val busy = cursor.getInt(0)
+                                val log = cursor.getInt(1)
+                                val checkpointed = cursor.getInt(2)
+                                Log.d("BackupDebug", "Final checkpoint: busy=$busy, log=$log, checkpointed=$checkpointed")
+
+                                if (log > 0 && checkpointed > 0) {
+                                    Log.d("BackupDebug", "✅ $checkpointed frame berhasil di-flush!")
+                                } else if (log == 0) {
+                                    Log.w("BackupDebug", "⚠️ WAL sudah kosong (log=0), mungkin data hilang!")
+                                }
+                            }
+                        }
+
+                        sqliteDb.close()
+
+                        val finalWalSize = if (walFile.exists()) walFile.length() else 0
+                        Log.d("BackupDebug", "WAL size final: $finalWalSize bytes")
+
+                    } catch (e: Exception) {
+                        Log.e("BackupDebug", "Error final checkpoint: ${e.message}", e)
+                    }
+                }
+
+                // LANGKAH 4: Verifikasi dan backup
+                if (!dbPath.exists()) {
+                    Log.e("BackupDebug", "❌ DB file tidak ditemukan!")
+                    return@withContext
+                }
+
+                val dbSize = dbPath.length()
+                Log.d("BackupDebug", "DB size untuk backup: $dbSize bytes")
+
+                // File sementara untuk backup
+                val tempBackup = File(context.cacheDir, BACKUP_FILENAME)
+
+                // Copy main DB
+                dbPath.copyTo(tempBackup, overwrite = true)
+
+                Log.d("BackupDebug", "✅ DB file copied, size: ${tempBackup.length()} bytes")
+
+                val fileMetadata = DriveFile().apply {
+                    name = BACKUP_FILENAME
+                    mimeType = "application/octet-stream"
+                }
+
+                val mediaContent = FileContent("application/octet-stream", tempBackup)
+
+                val existingId = findBackupFileId(drive)
+                if (existingId == null) {
+                    drive.files().create(fileMetadata, mediaContent).execute()
+                    Log.d("BackupDebug", "Backup baru dibuat di Drive")
+                } else {
+                    drive.files().update(existingId, fileMetadata, mediaContent).execute()
+                    Log.d("BackupDebug", "Backup existing diupdate di Drive")
+                }
+
+                // Simpan metadata backup time
+                val currentTime = System.currentTimeMillis()
+                uploadMetadata(drive, currentTime)
+                LocalBackupMeta.saveBackupTime(context, currentTime)
+
+                Log.d("BackupDebug", "Backup selesai!")
+
+            } catch (e: Exception) {
+                Log.e("BackupDebug", "ERROR saat backup: ${e.message}", e)
+                throw e
             }
-
-            val mediaContent = FileContent("application/octet-stream", tempBackup)
-
-            val existingId = findBackupFileId(drive)
-            if (existingId == null) {
-                drive.files().create(fileMetadata, mediaContent).execute()
-            } else {
-                drive.files().update(existingId, fileMetadata, mediaContent).execute()
-            }
-
-            // Simpan metadata backup time
-            val currentTime = System.currentTimeMillis()
-            uploadMetadata(drive, currentTime)
-            LocalBackupMeta.saveBackupTime(context, currentTime)
         }
     }
+
 
 
     suspend fun restoreDatabase(context: Context, drive: Drive): Boolean {

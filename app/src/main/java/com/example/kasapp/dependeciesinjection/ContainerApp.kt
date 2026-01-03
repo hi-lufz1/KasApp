@@ -1,6 +1,7 @@
 package com.example.kasapp.dependenciesinjection
 
 import android.content.Context
+import android.content.SharedPreferences
 import com.example.kasapp.data.db.KasAppDatabase
 import com.example.kasapp.repository.BackupRepository
 import com.example.kasapp.repository.ChartRepository
@@ -18,28 +19,33 @@ interface InterfaceContainerApp {
 
 class ContainerApp(private val context: Context) : InterfaceContainerApp {
 
+    private val database: KasAppDatabase by lazy {
+        KasAppDatabase.getDatabase(context)
+    }
+
     override val repositoryMenuMakanan: RepositoryMenuMakanan by lazy {
         LocalRepositoryMenuMakanan(
-            KasAppDatabase.getDatabase(context).menuMakananDao(),
-            context   // ⬅ Tambahkan context
+            database.menuMakananDao(),
+            context
         )
     }
 
     override val repositoryTransaksi: RepositoryTransaksi by lazy {
         LocalRepositoryTransaksi(
-            KasAppDatabase.getDatabase(context).transaksiDao(),
-            context   // ⬅ Tambahkan context
+            database.transaksiDao(),
+            context
         )
     }
 
     override val chartRepository: ChartRepository by lazy {
         ChartRepository(
-            KasAppDatabase.getDatabase(context).transaksiDao()
+            database.transaksiDao()
         )
     }
 
     override val backupRepository: BackupRepository by lazy {
         BackupRepository(context)
     }
+
 }
 

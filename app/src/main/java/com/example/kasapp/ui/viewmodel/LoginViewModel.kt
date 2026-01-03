@@ -15,12 +15,12 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel(
     application: Application,
-    private val backupRepository: BackupRepository
+    private val backupRepository: BackupRepository,
 ) : AndroidViewModel(application) {
 
     private val _account = MutableStateFlow<GoogleSignInAccount?>(null)
     val account = _account.asStateFlow()
-    private val _isLoading = MutableStateFlow(true)
+    private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
 

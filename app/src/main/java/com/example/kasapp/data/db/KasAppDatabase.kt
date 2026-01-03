@@ -18,7 +18,7 @@ import com.example.kasapp.data.entity.Transaksi // <-- IMPORT BARU
         Transaksi::class,     // <-- TAMBAHKAN ENTITY
         DetailTransaksi::class  // <-- TAMBAHKAN ENTITY
     ],
-    version = 4, // <-- NAIKKAN VERSI DATABASE KARENA ADA PERUBAHAN
+    version = 6, // <-- NAIKKAN VERSI DATABASE KARENA ADA PERUBAHAN
     exportSchema = false
 )
 abstract class KasAppDatabase : RoomDatabase() {
@@ -41,6 +41,17 @@ abstract class KasAppDatabase : RoomDatabase() {
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { Instance = it }
+            }
+        }
+        fun closeAll(context: Context) {
+            synchronized(this) {
+                Instance?.let {
+                    if (it.isOpen) {
+                        it.close()
+                        Log.d("KasAppDatabase", "Instance closed")
+                    }
+                }
+                Instance = null
             }
         }
 
