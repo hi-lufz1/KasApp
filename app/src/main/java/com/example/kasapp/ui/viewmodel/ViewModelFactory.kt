@@ -37,7 +37,12 @@ object ViewModelFactory {
         // Initializer untuk HomeMenuViewModel
         initializer {
             HomeMenuViewModel(
-                kasApp().containerApp.repositoryMenuMakanan
+                kasApp().containerApp.repositoryMenuMakanan,
+                onLocalDataChanged = {
+                    BackupDebounceHolder.notifyChange(
+                        kasApp().containerApp.backupRepository
+                    )
+                }
             )
         }
 

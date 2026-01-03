@@ -31,7 +31,8 @@ data class MenuUiState(
  * ViewModel untuk KelolaMenuScreen (Home)
  */
 class HomeMenuViewModel(
-    private val repository: RepositoryMenuMakanan
+    private val repository: RepositoryMenuMakanan,
+    private val onLocalDataChanged: () -> Unit,
 ) : ViewModel() {
 
     // State utama yang diobservasi oleh UI
@@ -116,6 +117,7 @@ class HomeMenuViewModel(
     fun deleteMenu(menu: MenuMakanan) {
         viewModelScope.launch {
             repository.deleteMenu(menu)
+            onLocalDataChanged()
         }
     }
 }
