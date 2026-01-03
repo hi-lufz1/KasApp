@@ -31,6 +31,21 @@ class LoginViewModel(
         _account.value = account
         _isLoading.value = false
     }
+    fun backupBeforeLogout(
+        onResult: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                backupRepository.backupDatabase()
+                onResult(true)
+            } catch (e: Exception) {
+                onResult(false)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
 
     fun setAccount(account: GoogleSignInAccount?) {

@@ -2,6 +2,7 @@ package com.example.kasapp.ui.viewmodel.Menu
 
 import androidx.lifecycle.ViewModel
 import com.example.kasapp.data.entity.MenuMakanan
+import com.example.kasapp.ui.viewmodel.BackupViewModel
 import com.example.ucp2.repository.RepositoryMenuMakanan
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +22,8 @@ data class InsertMenuUiState(
 // ---------------------------------------------
 
 class InsertMenuViewModel(
-    private val repository: RepositoryMenuMakanan
+    private val repository: RepositoryMenuMakanan,
+    private val backupViewModel: BackupViewModel
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(InsertMenuUiState())
@@ -82,6 +84,7 @@ class InsertMenuViewModel(
         )
         // Simpan ke repository
         repository.insertMenu(menu)
+        backupViewModel.notifyLocalDataChanged()
         return true // Berhasil
     }
 }

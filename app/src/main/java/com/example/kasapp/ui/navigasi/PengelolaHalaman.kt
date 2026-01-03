@@ -286,11 +286,13 @@ fun PengelolaHalaman(
                     navController.navigate(TentangKami.route)
                 },
                 onKeluarAkunClick = {
-                    googleSignInClient.signOut().addOnCompleteListener {
-                        loginViewModel.clearSession()
+                    loginViewModel.backupBeforeLogout { success ->
+                        googleSignInClient.signOut().addOnCompleteListener {
+                            loginViewModel.clearSession()
 
-                        navController.navigate("login") {
-                            popUpTo(0) { inclusive = true }
+                            navController.navigate("login") {
+                                popUpTo(0) { inclusive = true }
+                            }
                         }
                     }
                 }

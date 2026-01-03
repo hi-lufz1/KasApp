@@ -6,6 +6,7 @@ import com.example.kasapp.data.entity.DetailTransaksi
 import com.example.kasapp.data.entity.MenuMakanan
 import com.example.kasapp.data.entity.Transaksi
 import com.example.kasapp.repository.RepositoryTransaksi
+import com.example.kasapp.ui.viewmodel.BackupViewModel
 import com.example.ucp2.repository.RepositoryMenuMakanan
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -53,6 +54,7 @@ data class KasirUiState(
 class KasirViewModel(
     private val repositoryMenuMakanan: RepositoryMenuMakanan,
     private val repositoryTransaksi: RepositoryTransaksi,
+    private val backupViewModel: BackupViewModel,
     private var currentTransactionId: Int? = null
 ) : ViewModel() {
 
@@ -179,6 +181,7 @@ class KasirViewModel(
             }
 
             repositoryTransaksi.simpanTransaksi(transaksi, detailItems)
+            backupViewModel.notifyLocalDataChanged()
             _uiState.update { it.copy(lastTransactionTimestamp = timestamp) }
             onSuccess()
         }
@@ -252,7 +255,7 @@ class KasirViewModel(
 
             // Hapus dari database (Database bersih)
             repositoryTransaksi.deleteTransaksi(transaksiToDelete)
-
+            backupViewModel.notifyLocalDataChanged()
             // Reset ID saja, jangan reset cart agar UI tidak berubah kosong
             currentTransactionId = null
         }
