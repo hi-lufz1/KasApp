@@ -77,16 +77,19 @@ fun LoginScreen(
         if (result.resultCode == Activity.RESULT_OK) {
             val acc = GoogleSignIn.getLastSignedInAccount(context)
             if (acc != null) {
-                viewModel.autoRestore {
-                    navController.navigate("home/${acc.displayName}/${acc.email}") {
-                        popUpTo("login") { inclusive = true }
+                viewModel.autoRestore { wasRestored ->
+                    if (wasRestored) {
+                        (activity as MainActivity).restartApp() // ⬅ Refresh + Clear ViewModel
+                    } else {
+                        navController.navigate("home/${acc.displayName}/${acc.email}") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                        viewModel.scheduleBackupIfAllowed(acc)
                     }
-                    viewModel.scheduleBackupIfAllowed(acc)
                 }
             }
         }
     }
-
 
     val driveScopes = arrayOf(
         Scope(DriveScopes.DRIVE_FILE),
@@ -116,14 +119,15 @@ fun LoginScreen(
             return@LaunchedEffect // ⛔ stop supaya tidak lanjut ke nav / Worker
         }
 
-        viewModel.autoRestore {
-            (activity as MainActivity).recreate() // ⬅ paksa refresh DB + ViewModel
-
-            navController.navigate("home/${acc.displayName}/${acc.email}") {
-                popUpTo("login") { inclusive = true }
+        viewModel.autoRestore { wasRestored ->
+            if (wasRestored) {
+                (activity as MainActivity).restartApp() // ⬅ Refresh + Clear ViewModel
+            } else {
+                navController.navigate("home/${acc.displayName}/${acc.email}") {
+                    popUpTo("login") { inclusive = true }
+                }
+                viewModel.scheduleBackupIfAllowed(acc)
             }
-
-            viewModel.scheduleBackupIfAllowed(acc)
         }
 
     }

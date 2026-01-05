@@ -47,4 +47,10 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    fun restartApp() {
+        (application as KasApp).refreshContainer() // ⬅ Refresh Dependensi (DB & Repo baru)
+        viewModelStore.clear()
+        recreate()
+    }
 }

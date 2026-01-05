@@ -291,11 +291,17 @@ fun PengelolaHalaman(
                 },
                 onKeluarAkunClick = {
                     loginViewModel.backupBeforeLogout { success ->
-                        googleSignInClient.signOut().addOnCompleteListener {
-                            loginViewModel.clearSession()
+                        if (!success) {
+                            android.widget.Toast.makeText(context, "Backup Gagal! Data mungkin belum tersimpan di Drive.", android.widget.Toast.LENGTH_LONG).show()
+                        }
 
-                            navController.navigate("login") {
-                                popUpTo(0) { inclusive = true }
+                        googleSignInClient.signOut().addOnCompleteListener {
+                            loginViewModel.clearLocalData {
+                                loginViewModel.clearSession()
+
+                                navController.navigate("login") {
+                                    popUpTo(0) { inclusive = true }
+                                }
                             }
                         }
                     }

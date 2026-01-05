@@ -47,13 +47,22 @@ class LoginViewModel(
         }
     }
 
-
     fun setAccount(account: GoogleSignInAccount?) {
         _account.value = account
     }
 
     fun clearSession() {
         _account.value = null
+    }
+
+    fun clearLocalData(onDone: () -> Unit) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            com.example.kasapp.data.db.KasAppDatabase.getDatabase(getApplication()).clearAllTables()
+            com.example.kasapp.data.drive.LocalBackupMeta.clearBackupTime(getApplication()) // 🔹 Reset timestamp backup
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                onDone()
+            }
+        }
     }
 
 
@@ -71,7 +80,7 @@ class LoginViewModel(
     }
 
     // 🔹 Auto restore setelah login
-    fun autoRestore(onDone: (Boolean) -> Unit) {
+    fun autoRestore(onDone: (wasRestored: Boolean) -> Unit) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
@@ -79,8 +88,9 @@ class LoginViewModel(
                 if (needRestore) {
                     backupRepository.restoreDatabase()
                 }
-                onDone(true)
+                onDone(needRestore) // ⬅ Return true jika restore dilakukan
             } catch (e: Exception) {
+                e.printStackTrace()
                 onDone(false)
             } finally {
                 _isLoading.value = false

@@ -13,6 +13,9 @@ class KasApp : Application() {
     override fun onCreate() {
         super.onCreate()
         containerApp = ContainerApp(this)
+    }
 
+    fun refreshContainer() {
+        containerApp = ContainerApp(this)
     }
 }

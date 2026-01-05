@@ -18,4 +18,11 @@ object LocalBackupMeta {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
             .getLong(LAST_BACKUP_KEY, 0L)
     }
+
+    fun clearBackupTime(context: Context) {
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .apply()
+    }
 }
